@@ -1867,7 +1867,7 @@ void udpgw_client_handler_received (void *unused, BAddr local_addr, BAddr remote
             // build IP header
             iph.version4_ihl4 = IPV4_MAKE_VERSION_IHL(sizeof(iph));
             iph.ds = hton8(0);
-            iph.total_length = hton16(sizeof(iph) + sizeof(struct udp_header) + data_len);
+            iph.total_length = hton16((uint16_t)(sizeof(iph) + sizeof(struct udp_header) + (size_t)data_len));
             iph.identification = hton16(0);
             iph.flags3_fragmentoffset13 = hton16(0);
             iph.ttl = hton8(64);
@@ -1880,7 +1880,7 @@ void udpgw_client_handler_received (void *unused, BAddr local_addr, BAddr remote
             // build UDP header
             udph.source_port = remote_addr.ipv4.port;
             udph.dest_port = local_addr.ipv4.port;
-            udph.length = hton16(sizeof(udph) + data_len);
+            udph.length = hton16((uint16_t)(sizeof(udph) + (size_t)data_len));
             udph.checksum = hton16(0);
             udph.checksum = udp_checksum(&udph, data, data_len, iph.source_address, iph.destination_address);
             
@@ -1913,7 +1913,7 @@ void udpgw_client_handler_received (void *unused, BAddr local_addr, BAddr remote
             iph.version4_tc4 = hton8((6 << 4));
             iph.tc4_fl4 = hton8(0);
             iph.fl = hton16(0);
-            iph.payload_length = hton16(sizeof(struct udp_header) + data_len);
+            iph.payload_length = hton16((uint16_t)(sizeof(struct udp_header) + (size_t)data_len));
             iph.next_header = hton8(IPV6_NEXT_UDP);
             iph.hop_limit = hton8(64);
             memcpy(iph.source_address, remote_addr.ipv6.ip, 16);
@@ -1922,7 +1922,7 @@ void udpgw_client_handler_received (void *unused, BAddr local_addr, BAddr remote
             // build UDP header
             udph.source_port = remote_addr.ipv6.port;
             udph.dest_port = local_addr.ipv6.port;
-            udph.length = hton16(sizeof(udph) + data_len);
+            udph.length = hton16((uint16_t)(sizeof(udph) + (size_t)data_len));
             udph.checksum = hton16(0);
             udph.checksum = udp_ip6_checksum(&udph, data, data_len, iph.source_address, iph.destination_address);
             

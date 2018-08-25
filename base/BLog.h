@@ -245,7 +245,7 @@ void BLog_AppendBytes (MemRef data)
     data.len = (data.len > avail ? avail : data.len);
     
     memcpy(blog_global.logbuf + blog_global.logbuf_pos, data.ptr, data.len);
-    blog_global.logbuf_pos += data.len;
+    blog_global.logbuf_pos += (int)data.len;
     blog_global.logbuf[blog_global.logbuf_pos] = '\0';
 }
 

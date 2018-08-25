@@ -191,7 +191,7 @@ void connector_handler (BSocksClient* o, int is_error)
     
     // write hello header
     header.ver = hton8(SOCKS_VERSION);
-    header.nmethods = hton8(o->num_auth_info);
+    header.nmethods = hton8((uint8_t)o->num_auth_info);
     memcpy(o->buffer, &header, sizeof(header));
     
     // write hello methods
@@ -202,7 +202,7 @@ void connector_handler (BSocksClient* o, int is_error)
     }
     
     // send
-    PacketPassInterface_Sender_Send(o->control.send_if, (uint8_t *)o->buffer, size.value);
+    PacketPassInterface_Sender_Send(o->control.send_if, (uint8_t *)o->buffer, (int)size.value);
     
     // set state
     o->state = STATE_SENDING_HELLO;
@@ -300,15 +300,15 @@ void recv_handler_done (BSocksClient *o, int data_len)
                     // write password packet
                     ptr = o->buffer;
                     *ptr++ = 1;
-                    *ptr++ = ai->password.username_len;
+                    *ptr++ = (char)ai->password.username_len;
                     memcpy(ptr, ai->password.username, ai->password.username_len);
                     ptr += ai->password.username_len;
-                    *ptr++ = ai->password.password_len;
+                    *ptr++ = (char)ai->password.password_len;
                     memcpy(ptr, ai->password.password, ai->password.password_len);
                     ptr += ai->password.password_len;
                     
                     // start sending
-                    PacketPassInterface_Sender_Send(o->control.send_if, (uint8_t *)o->buffer, size.value);
+                    PacketPassInterface_Sender_Send(o->control.send_if, (uint8_t *)o->buffer, (int)size.value);
                     
                     // set state
                     o->state = STATE_SENDING_PASSWORD;
@@ -418,7 +418,7 @@ void send_handler_done (BSocksClient *o)
             }
             
             // receive hello
-            start_receive(o, (uint8_t *)o->buffer, size.value);
+            start_receive(o, (uint8_t *)o->buffer, (int)size.value);
             
             // set state
             o->state = STATE_SENT_HELLO;
@@ -455,7 +455,7 @@ void send_handler_done (BSocksClient *o)
             }
             
             // receive reply header
-            start_receive(o, (uint8_t *)o->buffer, size.value);
+            start_receive(o, (uint8_t *)o->buffer, (int)size.value);
             
             // set state
             o->state = STATE_SENT_PASSWORD;
@@ -510,7 +510,7 @@ void auth_finished (BSocksClient *o)
     memcpy(o->buffer, &header, sizeof(header));
     
     // send request
-    PacketPassInterface_Sender_Send(o->control.send_if, (uint8_t *)o->buffer, size.value);
+    PacketPassInterface_Sender_Send(o->control.send_if, (uint8_t *)o->buffer, (int)size.value);
     
     // set state
     o->state = STATE_SENDING_REQUEST;
@@ -538,10 +538,10 @@ int BSocksClient_Init (BSocksClient *o,
                        BAddr server_addr, const struct BSocksClient_auth_info *auth_info, size_t num_auth_info,
                        BAddr dest_addr, BSocksClient_handler handler, void *user, BReactor *reactor)
 {
+#ifndef NDEBUG
     size_t i;
     ASSERT(!BAddr_IsInvalid(&server_addr))
     ASSERT(dest_addr.type == BADDR_TYPE_IPV4 || dest_addr.type == BADDR_TYPE_IPV6)
-#ifndef NDEBUG
     for (i = 0; i < num_auth_info; i++) {
         ASSERT(auth_info[i].auth_type == SOCKS_METHOD_NO_AUTHENTICATION_REQUIRED ||
                auth_info[i].auth_type == SOCKS_METHOD_USERNAME_PASSWORD)
