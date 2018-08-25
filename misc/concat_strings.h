@@ -42,13 +42,15 @@
 
 static char * concat_strings (int num, ...)
 {
-    ASSERT(num >= 0)
-    
+    int i;
+    char *res_str;
     // calculate sum of lengths
     size_t sum = 0;
     va_list ap;
+
+    ASSERT(num >= 0)
     va_start(ap, num);
-    for (int i = 0; i < num; i++) {
+    for (i = 0; i < num; i++) {
         const char *str = va_arg(ap, const char *);
         size_t str_len = strlen(str);
         if (str_len > SIZE_MAX - 1 - sum) {
@@ -60,7 +62,7 @@ static char * concat_strings (int num, ...)
     va_end(ap);
     
     // allocate memory
-    char *res_str = (char *)malloc(sum + 1);
+    res_str = (char *)malloc(sum + 1);
     if (!res_str) {
         return NULL;
     }
@@ -68,7 +70,7 @@ static char * concat_strings (int num, ...)
     // copy strings
     sum = 0;
     va_start(ap, num);
-    for (int i = 0; i < num; i++) {
+    for (i = 0; i < num; i++) {
         const char *str = va_arg(ap, const char *);
         size_t str_len = strlen(str);
         memcpy(res_str + sum, str, str_len);

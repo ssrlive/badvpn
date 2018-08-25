@@ -39,13 +39,15 @@ static void SAvl_Init (SAvl *o)
 
 static int SAvl_Insert (SAvl *o, SAvlArg arg, SAvlEntry *entry, SAvlEntry **out_existing)
 {
+    SAvl__TreeRef out_ref;
+    int res;
+
     ASSERT(entry)
 #if SAVL_PARAM_FEATURE_COUNTS
     ASSERT(SAvl_Count(o, arg) < SAVL_PARAM_VALUE_COUNT_MAX)
 #endif
     
-    SAvl__TreeRef out_ref;
-    int res = SAvl__Tree_Insert(&o->tree, arg, SAvl__TreeDeref(arg, entry), &out_ref);
+    res = SAvl__Tree_Insert(&o->tree, arg, SAvl__TreeDeref(arg, entry), &out_ref);
     
     if (out_existing) {
         *out_existing = out_ref.link;
@@ -115,17 +117,19 @@ static SAvlEntry * SAvl_GetLast (const SAvl *o, SAvlArg arg)
 
 static SAvlEntry * SAvl_GetNext (const SAvl *o, SAvlArg arg, SAvlEntry *entry)
 {
+    SAvl__TreeRef ref;
     ASSERT(entry)
     
-    SAvl__TreeRef ref = SAvl__Tree_GetNext(&o->tree, arg, SAvl__TreeDeref(arg, entry));
+    ref = SAvl__Tree_GetNext(&o->tree, arg, SAvl__TreeDeref(arg, entry));
     return ref.link;
 }
 
 static SAvlEntry * SAvl_GetPrev (const SAvl *o, SAvlArg arg, SAvlEntry *entry)
 {
+    SAvl__TreeRef ref;
     ASSERT(entry)
     
-    SAvl__TreeRef ref = SAvl__Tree_GetPrev(&o->tree, arg, SAvl__TreeDeref(arg, entry));
+    ref = SAvl__Tree_GetPrev(&o->tree, arg, SAvl__TreeDeref(arg, entry));
     return ref.link;
 }
 
@@ -136,7 +140,7 @@ static int SAvl_IsEmpty (const SAvl *o)
 
 static void SAvl_Verify (const SAvl *o, SAvlArg arg)
 {
-    return SAvl__Tree_Verify(&o->tree, arg);
+    SAvl__Tree_Verify(&o->tree, arg);
 }
 
 #if SAVL_PARAM_FEATURE_COUNTS

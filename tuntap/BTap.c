@@ -144,6 +144,10 @@ void report_error (BTap *o)
 
 void output_handler_recv (BTap *o, uint8_t *data)
 {
+#ifdef BADVPN_USE_WINAPI
+    BOOL res;
+#endif
+
     DebugObject_Access(&o->d_obj);
     DebugError_AssertNoError(&o->d_err);
     ASSERT(data)
@@ -154,7 +158,7 @@ void output_handler_recv (BTap *o, uint8_t *data)
     memset(&o->recv_olap.olap, 0, sizeof(o->recv_olap.olap));
     
     // read
-    BOOL res = ReadFile(o->device, data, o->frame_mtu, NULL, &o->recv_olap.olap);
+    res = ReadFile(o->device, data, o->frame_mtu, NULL, &o->recv_olap.olap);
     if (res == FALSE && GetLastError() != ERROR_IO_PENDING) {
         BLog(BLOG_ERROR, "ReadFile failed (%u)", GetLastError());
         report_error(o);
@@ -192,9 +196,9 @@ void output_handler_recv (BTap *o, uint8_t *data)
 
 int BTap_Init (BTap *o, BReactor *reactor, char *devname, BTap_handler_error handler_error, void *handler_error_user, int tun)
 {
+    struct BTap_init_data init_data;
     ASSERT(tun == 0 || tun == 1)
     
-    struct BTap_init_data init_data;
     init_data.dev_type = tun ? BTAP_DEV_TUN : BTAP_DEV_TAP;
     init_data.init_type = BTAP_INIT_STRING;
     init_data.init.string = devname;
@@ -204,6 +208,16 @@ int BTap_Init (BTap *o, BReactor *reactor, char *devname, BTap_handler_error han
 
 int BTap_Init2 (BTap *o, BReactor *reactor, struct BTap_init_data init_data, BTap_handler_error handler_error, void *handler_error_user)
 {
+#ifdef BADVPN_USE_WINAPI
+    char *device_component_id;
+    char *device_name;
+    uint32_t tun_addrs[3];
+    char device_path[TAPWIN32_MAX_REG_SIZE];
+    DWORD len;
+    ULONG umtu = 0;
+    ULONG upstatus;
+#endif
+
     ASSERT(init_data.dev_type == BTAP_DEV_TUN || init_data.dev_type == BTAP_DEV_TAP)
     
     // init arguments
@@ -222,10 +236,6 @@ int BTap_Init2 (BTap *o, BReactor *reactor, struct BTap_init_data init_data, BTa
         goto fail0;
     }
     
-    char *device_component_id;
-    char *device_name;
-    uint32_t tun_addrs[3];
-    
     if (init_data.dev_type == BTAP_DEV_TUN) {
         if (!tapwin32_parse_tun_spec(init_data.init.string, &device_component_id, &device_name, tun_addrs)) {
             BLog(BLOG_ERROR, "failed to parse TUN device specification");
@@ -239,9 +249,7 @@ int BTap_Init2 (BTap *o, BReactor *reactor, struct BTap_init_data init_data, BTa
     }
     
     // locate device path
-    
-    char device_path[TAPWIN32_MAX_REG_SIZE];
-    
+        
     BLog(BLOG_INFO, "Looking for TAP-Win32 with component ID %s, name %s", device_component_id, device_name);
     
     if (!tapwin32_find_device(device_component_id, device_name, &device_path)) {
@@ -261,8 +269,6 @@ int BTap_Init2 (BTap *o, BReactor *reactor, struct BTap_init_data init_data, BTa
     
     // set TUN if needed
     
-    DWORD len;
-    
     if (init_data.dev_type == BTAP_DEV_TUN) {
         if (!DeviceIoControl(o->device, TAP_IOCTL_CONFIG_TUN, tun_addrs, sizeof(tun_addrs), tun_addrs, sizeof(tun_addrs), &len, NULL)) {
             BLog(BLOG_ERROR, "DeviceIoControl(TAP_IOCTL_CONFIG_TUN) failed");
@@ -271,9 +277,7 @@ int BTap_Init2 (BTap *o, BReactor *reactor, struct BTap_init_data init_data, BTa
     }
     
     // get MTU
-    
-    ULONG umtu = 0;
-    
+        
     if (!DeviceIoControl(o->device, TAP_IOCTL_GET_MTU, &umtu, sizeof(umtu), &umtu, sizeof(umtu), &len, NULL)) {
         BLog(BLOG_ERROR, "DeviceIoControl(TAP_IOCTL_GET_MTU) failed");
         goto fail2;
@@ -287,7 +291,7 @@ int BTap_Init2 (BTap *o, BReactor *reactor, struct BTap_init_data init_data, BTa
     
     // set connected
     
-    ULONG upstatus = TRUE;
+    upstatus = TRUE;
     if (!DeviceIoControl(o->device, TAP_IOCTL_SET_MEDIA_STATUS, &upstatus, sizeof(upstatus), &upstatus, sizeof(upstatus), &len, NULL)) {
         BLog(BLOG_ERROR, "DeviceIoControl(TAP_IOCTL_SET_MEDIA_STATUS) failed");
         goto fail2;
@@ -524,6 +528,12 @@ int BTap_GetMTU (BTap *o)
 
 void BTap_Send (BTap *o, uint8_t *data, int data_len)
 {
+#ifdef BADVPN_USE_WINAPI
+    BOOL res;
+    int succeeded;
+    DWORD bytes;
+#endif
+
     DebugObject_Access(&o->d_obj);
     DebugError_AssertNoError(&o->d_err);
     ASSERT(data_len >= 0)
@@ -539,15 +549,13 @@ void BTap_Send (BTap *o, uint8_t *data, int data_len)
     memset(&o->send_olap.olap, 0, sizeof(o->send_olap.olap));
     
     // write
-    BOOL res = WriteFile(o->device, data, data_len, NULL, &o->send_olap.olap);
+    res = WriteFile(o->device, data, data_len, NULL, &o->send_olap.olap);
     if (res == FALSE && GetLastError() != ERROR_IO_PENDING) {
         BLog(BLOG_ERROR, "WriteFile failed (%u)", GetLastError());
         return;
     }
     
     // wait
-    int succeeded;
-    DWORD bytes;
     BReactorIOCPOverlapped_Wait(&o->send_olap, &succeeded, &bytes);
     
     if (!succeeded) {

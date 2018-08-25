@@ -240,11 +240,12 @@ void LinkedList1_Remove (LinkedList1 *list, LinkedList1Node *node)
 
 void LinkedList1_InsertListAfter (LinkedList1 *list, LinkedList1 ins_list, LinkedList1Node *target)
 {
+    LinkedList1Node *t_next;
     if (!ins_list.first) {
         return;
     }
     
-    LinkedList1Node *t_next = (target ? target->n : list->first);
+    t_next = (target ? target->n : list->first);
     
     ins_list.first->p = target;
     ins_list.last->n = t_next;

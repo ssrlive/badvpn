@@ -48,6 +48,9 @@ void process_data (PacketProtoDecoder *enc)
     int was_error = 0;
     
     do {
+        struct packetproto_header header;
+        int data_len;
+
         uint8_t *data = enc->buf + enc->buf_start;
         int left = enc->buf_used;
         
@@ -55,11 +58,10 @@ void process_data (PacketProtoDecoder *enc)
         if (left < sizeof(struct packetproto_header)) {
             break;
         }
-        struct packetproto_header header;
         memcpy(&header, data, sizeof(header));
         data += sizeof(struct packetproto_header);
         left -= sizeof(struct packetproto_header);
-        int data_len = ltoh16(header.len);
+        data_len = ltoh16(header.len);
         
         // check data length
         if (data_len > enc->output_mtu) {

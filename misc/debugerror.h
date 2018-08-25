@@ -50,9 +50,9 @@
 #endif
 
 typedef struct {
-    #ifndef NDEBUG
+//    #ifndef NDEBUG
     BPending job;
-    #endif
+//    #endif
 } DebugError;
 
 static void DebugError_Init (DebugError *o, BPendingGroup *pg);

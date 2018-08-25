@@ -98,12 +98,12 @@ static void addr_any_to_sys (struct sys_addr *out, int family)
         } break;
         
         case BADDR_TYPE_IPV6: {
+            struct in6_addr any = IN6ADDR_ANY_INIT;
             out->len = sizeof(out->addr.ipv6);
             memset(&out->addr.ipv6, 0, sizeof(out->addr.ipv6));
             out->addr.ipv6.sin6_family = AF_INET6;
             out->addr.ipv6.sin6_port = 0;
             out->addr.ipv6.sin6_flowinfo = 0;
-            struct in6_addr any = IN6ADDR_ANY_INIT;
             out->addr.ipv6.sin6_addr = any;
             out->addr.ipv6.sin6_scope_id = 0;
         } break;
@@ -157,9 +157,10 @@ static void listener_next_job_handler (BListener *o)
     
     // start accept operation
     while (1) {
-        memset(&o->olap.olap, 0, sizeof(o->olap.olap));
         DWORD bytes;
-        BOOL res = o->fnAcceptEx(o->sock, o->newsock, o->addrbuf, 0, sizeof(struct BListener_addrbuf_stub), sizeof(struct BListener_addrbuf_stub), &bytes, &o->olap.olap);
+        BOOL res;
+        memset(&o->olap.olap, 0, sizeof(o->olap.olap));
+        res = o->fnAcceptEx(o->sock, o->newsock, o->addrbuf, 0, sizeof(struct BListener_addrbuf_stub), sizeof(struct BListener_addrbuf_stub), &bytes, &o->olap.olap);
         if (res == FALSE && WSAGetLastError() != ERROR_IO_PENDING) {
             BLog(BLOG_ERROR, "AcceptEx failed");
             continue;
@@ -306,6 +307,9 @@ static void connection_abort (BConnection *o)
 
 static void connection_send_iface_handler_send (BConnection *o, uint8_t *data, int data_len)
 {
+    WSABUF buf;
+    int res;
+
     DebugObject_Access(&o->d_obj);
     DebugError_AssertNoError(&o->d_err);
     ASSERT(!o->aborted)
@@ -317,14 +321,13 @@ static void connection_send_iface_handler_send (BConnection *o, uint8_t *data, i
         data_len = ULONG_MAX;
     }
     
-    WSABUF buf;
     buf.buf = (char *)data;
     buf.len = data_len;
     
     memset(&o->send.olap.olap, 0, sizeof(o->send.olap.olap));
     
     // send
-    int res = WSASend(o->sock, &buf, 1, NULL, 0, &o->send.olap.olap, NULL);
+    res = WSASend(o->sock, &buf, 1, NULL, 0, &o->send.olap.olap, NULL);
     if (res == SOCKET_ERROR && WSAGetLastError() != WSA_IO_PENDING) {
         BLog(BLOG_ERROR, "WSASend failed (%d)", WSAGetLastError());
         connection_report_error(o);
@@ -338,6 +341,10 @@ static void connection_send_iface_handler_send (BConnection *o, uint8_t *data, i
 
 static void connection_recv_iface_handler_recv (BConnection *o, uint8_t *data, int data_len)
 {
+    WSABUF buf;
+    DWORD flags;
+    int res;
+
     DebugObject_Access(&o->d_obj);
     DebugError_AssertNoError(&o->d_err);
     ASSERT(!o->recv.closed)
@@ -350,15 +357,14 @@ static void connection_recv_iface_handler_recv (BConnection *o, uint8_t *data, i
         data_len = ULONG_MAX;
     }
     
-    WSABUF buf;
     buf.buf = (char *)data;
     buf.len = data_len;
     
     memset(&o->recv.olap.olap, 0, sizeof(o->recv.olap.olap));
     
     // recv
-    DWORD flags = 0;
-    int res = WSARecv(o->sock, &buf, 1, NULL, &flags, &o->recv.olap.olap, NULL);
+    flags = 0;
+    res = WSARecv(o->sock, &buf, 1, NULL, &flags, &o->recv.olap.olap, NULL);
     if (res == SOCKET_ERROR && WSAGetLastError() != WSA_IO_PENDING) {
         BLog(BLOG_ERROR, "WSARecv failed (%d)", WSAGetLastError());
         connection_report_error(o);
@@ -441,6 +447,11 @@ int BListener_InitFrom (BListener *o, struct BLisCon_from from,
                         BReactor *reactor, void *user,
                         BListener_handler handler)
 {
+    struct sys_addr sysaddr;
+    DWORD out_bytes;
+    GUID guid1 = WSAID_ACCEPTEX;
+    GUID guid2 = WSAID_GETACCEPTEXSOCKADDRS;
+
     ASSERT(from.type == BLISCON_FROM_ADDR)
     ASSERT(handler)
     BNetwork_Assert();
@@ -457,7 +468,6 @@ int BListener_InitFrom (BListener *o, struct BLisCon_from from,
     }
     
     // convert address
-    struct sys_addr sysaddr;
     addr_socket_to_sys(&sysaddr, from.u.from_addr.addr);
     
     // remember family
@@ -486,18 +496,14 @@ int BListener_InitFrom (BListener *o, struct BLisCon_from from,
         BLog(BLOG_ERROR, "listen failed");
         goto fail1;
     }
-    
-    DWORD out_bytes;
-    
+        
     // obtain AcceptEx
-    GUID guid1 = WSAID_ACCEPTEX;
     if (WSAIoctl(o->sock, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid1, sizeof(guid1), &o->fnAcceptEx, sizeof(o->fnAcceptEx), &out_bytes, NULL, NULL) != 0) {
         BLog(BLOG_ERROR, "faild to obtain AcceptEx");
         goto fail1;
     }
     
     // obtain GetAcceptExSockaddrs
-    GUID guid2 = WSAID_GETACCEPTEXSOCKADDRS;
     if (WSAIoctl(o->sock, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid2, sizeof(guid2), &o->fnGetAcceptExSockaddrs, sizeof(o->fnGetAcceptExSockaddrs), &out_bytes, NULL, NULL) != 0) {
         BLog(BLOG_ERROR, "faild to obtain GetAcceptExSockaddrs");
         goto fail1;
@@ -567,6 +573,12 @@ void BListener_Free (BListener *o)
 int BConnector_InitFrom (BConnector *o, struct BLisCon_from from, BReactor *reactor, void *user,
                          BConnector_handler handler)
 {
+    struct sys_addr sysaddr;
+    struct sys_addr local_sysaddr;
+    GUID guid = WSAID_CONNECTEX;
+    DWORD out_bytes;
+    BOOL res;
+
     ASSERT(from.type == BLISCON_FROM_ADDR)
     ASSERT(handler)
     BNetwork_Assert();
@@ -583,11 +595,9 @@ int BConnector_InitFrom (BConnector *o, struct BLisCon_from from, BReactor *reac
     }
     
     // convert address
-    struct sys_addr sysaddr;
     addr_socket_to_sys(&sysaddr, from.u.from_addr.addr);
     
     // create local any address
-    struct sys_addr local_sysaddr;
     addr_any_to_sys(&local_sysaddr, from.u.from_addr.addr.type);
     
     // init socket
@@ -609,8 +619,6 @@ int BConnector_InitFrom (BConnector *o, struct BLisCon_from from, BReactor *reac
     }
     
     // obtain ConnectEx
-    GUID guid = WSAID_CONNECTEX;
-    DWORD out_bytes;
     if (WSAIoctl(o->sock, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &o->fnConnectEx, sizeof(o->fnConnectEx), &out_bytes, NULL, NULL) != 0) {
         BLog(BLOG_ERROR, "faild to get ConnectEx");
         goto fail1;
@@ -620,7 +628,7 @@ int BConnector_InitFrom (BConnector *o, struct BLisCon_from from, BReactor *reac
     BReactorIOCPOverlapped_Init(&o->olap, o->reactor, o, (BReactorIOCPOverlapped_handler)connector_olap_handler);
     
     // start connect operation
-    BOOL res = o->fnConnectEx(o->sock, &sysaddr.addr.generic, sysaddr.len, NULL, 0, NULL, &o->olap.olap);
+    res = o->fnConnectEx(o->sock, &sysaddr.addr.generic, sysaddr.len, NULL, 0, NULL, &o->olap.olap);
     if (res == FALSE && WSAGetLastError() != ERROR_IO_PENDING) {
         BLog(BLOG_ERROR, "ConnectEx failed (%d)", WSAGetLastError());
         goto fail2;
@@ -703,10 +711,10 @@ int BConnection_Init (BConnection *o, struct BConnection_source source, BReactor
                 struct sockaddr *addr_remote;
                 int len_local;
                 int len_remote;
+                struct sys_addr sysaddr;
+
                 listener->fnGetAcceptExSockaddrs(listener->addrbuf, 0, sizeof(struct BListener_addrbuf_stub), sizeof(struct BListener_addrbuf_stub),
                                                  &addr_local, &len_local, &addr_remote, &len_remote);
-                
-                struct sys_addr sysaddr;
                 
                 ASSERT_FORCE(len_remote >= 0)
                 ASSERT_FORCE(len_remote <= sizeof(sysaddr.addr))

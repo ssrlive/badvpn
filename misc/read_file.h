@@ -41,27 +41,35 @@
 
 static int read_file (const char *file, uint8_t **out_data, size_t *out_len)
 {
+    size_t buf_len;
+    size_t buf_size;
+    uint8_t *buf;
+
     FILE *f = fopen(file, "r");
     if (!f) {
         goto fail0;
     }
     
-    size_t buf_len = 0;
-    size_t buf_size = 128;
+    buf_len = 0;
+    buf_size = 128;
     
-    uint8_t *buf = (uint8_t *)malloc(buf_size);
+    buf = (uint8_t *)malloc(buf_size);
     if (!buf) {
         goto fail1;
     }
     
     while (1) {
+        size_t bytes;
         if (buf_len == buf_size) {
+            size_t newsize;
+            uint8_t *newbuf;
+
             if (2 > SIZE_MAX / buf_size) {
                 goto fail;
             }
-            size_t newsize = 2 * buf_size;
+            newsize = 2 * buf_size;
             
-            uint8_t *newbuf = (uint8_t *)realloc(buf, newsize);
+            newbuf = (uint8_t *)realloc(buf, newsize);
             if (!newbuf) {
                 goto fail;
             }
@@ -70,7 +78,7 @@ static int read_file (const char *file, uint8_t **out_data, size_t *out_len)
             buf_size = newsize;
         }
         
-        size_t bytes = fread(buf + buf_len, 1, buf_size - buf_len, f);
+        bytes = fread(buf + buf_len, 1, buf_size - buf_len, f);
         if (bytes == 0) {
             if (feof(f)) {
                 break;

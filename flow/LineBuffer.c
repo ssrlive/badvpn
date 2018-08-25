@@ -38,6 +38,7 @@
 
 static void input_handler_done (LineBuffer *o, int data_len)
 {
+    int i;
     DebugObject_Access(&o->d_obj);
     ASSERT(data_len > 0)
     ASSERT(data_len <= o->buf_size - o->buf_used)
@@ -46,7 +47,6 @@ static void input_handler_done (LineBuffer *o, int data_len)
     o->buf_used += data_len;
     
     // look for newline
-    int i;
     for (i = o->buf_used - data_len; i < o->buf_used; i++) {
         if (o->buf[i] == o->nl_char) {
             break;
@@ -69,6 +69,7 @@ static void input_handler_done (LineBuffer *o, int data_len)
 
 static void output_handler_done (LineBuffer *o)
 {
+    int i;
     DebugObject_Access(&o->d_obj);
     ASSERT(o->buf_consumed > 0)
     ASSERT(o->buf_consumed <= o->buf_used)
@@ -78,7 +79,6 @@ static void output_handler_done (LineBuffer *o)
     o->buf_used -= o->buf_consumed;
     
     // look for newline
-    int i;
     for (i = 0; i < o->buf_used; i++) {
         if (o->buf[i] == o->nl_char) {
             break;

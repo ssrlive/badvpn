@@ -43,12 +43,14 @@
 
 static int split_spec (char *name, char *sep, char **out_fields[], int num_fields)
 {
+    size_t seplen;
+    int i = 0;
+
     ASSERT(num_fields > 0)
     ASSERT(strlen(sep) > 0)
     
-    size_t seplen = strlen(sep);
+    seplen = strlen(sep);
     
-    int i = 0;
     while (i < num_fields - 1) {
         char *s = strstr(name, sep);
         if (!s) {
@@ -90,6 +92,7 @@ int tapwin32_parse_tap_spec (char *name, char **out_component_id, char **out_hum
 
 int tapwin32_parse_tun_spec (char *name, char **out_component_id, char **out_human_name, uint32_t out_addrs[3])
 {
+    int i;
     char *addr_strs[3];
     
     char **out_fields[5];
@@ -103,7 +106,7 @@ int tapwin32_parse_tun_spec (char *name, char **out_component_id, char **out_hum
         goto fail0;
     }
     
-    for (int i = 0; i < 3; i++) {
+    for (i = 0; i < 3; i++) {
         if (!ipaddr_parse_ipv4_addr(MemRef_MakeCstr(addr_strs[i]), &out_addrs[i])) {
             goto fail1;
         }
@@ -127,6 +130,11 @@ fail0:
 
 int tapwin32_find_device (char *device_component_id, char *device_name, char (*device_path)[TAPWIN32_MAX_REG_SIZE])
 {
+    char net_cfg_instance_id[TAPWIN32_MAX_REG_SIZE];
+    int found = 0;
+    int pres;
+    
+    DWORD i;
     // open adapter key
     // used to find all devices with the given ComponentId
     HKEY adapter_key;
@@ -135,14 +143,12 @@ int tapwin32_find_device (char *device_component_id, char *device_name, char (*d
         return 0;
     }
     
-    char net_cfg_instance_id[TAPWIN32_MAX_REG_SIZE];
-    int found = 0;
-    int pres;
-    
-    DWORD i;
     for (i = 0;; i++) {
         DWORD len;
         DWORD type;
+        char unit_string[TAPWIN32_MAX_REG_SIZE];
+        HKEY unit_key;
+        char component_id[TAPWIN32_MAX_REG_SIZE];
         
         char key_name[TAPWIN32_MAX_REG_SIZE];
         len = sizeof(key_name);
@@ -150,17 +156,14 @@ int tapwin32_find_device (char *device_component_id, char *device_name, char (*d
             break;
         }
         
-        char unit_string[TAPWIN32_MAX_REG_SIZE];
         pres = _snprintf(unit_string, sizeof(unit_string), "%s\\%s", ADAPTER_KEY, key_name);
         if (pres < 0 || pres == sizeof(unit_string)) {
             continue;
         }
-        HKEY unit_key;
         if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, unit_string, 0, KEY_READ, &unit_key) != ERROR_SUCCESS) {
             continue;
         }
         
-        char component_id[TAPWIN32_MAX_REG_SIZE];
         len = sizeof(component_id);
         if (RegQueryValueEx(unit_key, "ComponentId", NULL, &type, (LPBYTE)component_id, &len) != ERROR_SUCCESS || type != REG_SZ) {
             ASSERT_FORCE(RegCloseKey(unit_key) == ERROR_SUCCESS)
@@ -177,6 +180,10 @@ int tapwin32_find_device (char *device_component_id, char *device_name, char (*d
         
         // check if ComponentId matches
         if (!strcmp(component_id, device_component_id)) {
+            char conn_string[TAPWIN32_MAX_REG_SIZE];
+            HKEY conn_key;
+            char name[TAPWIN32_MAX_REG_SIZE];
+
             // if no name was given, use the first device with the given ComponentId
             if (!device_name) {
                 found = 1;
@@ -184,18 +191,15 @@ int tapwin32_find_device (char *device_component_id, char *device_name, char (*d
             }
             
             // open connection key
-            char conn_string[TAPWIN32_MAX_REG_SIZE];
             pres = _snprintf(conn_string, sizeof(conn_string), "%s\\%s\\Connection", NETWORK_CONNECTIONS_KEY, net_cfg_instance_id);
             if (pres < 0 || pres == sizeof(conn_string)) {
                 continue;
             }
-            HKEY conn_key;
             if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, conn_string, 0, KEY_READ, &conn_key) != ERROR_SUCCESS) {
                 continue;
             }
             
             // read name
-            char name[TAPWIN32_MAX_REG_SIZE];
             len = sizeof(name);
             if (RegQueryValueEx(conn_key, "Name", NULL, &type, (LPBYTE)name, &len) != ERROR_SUCCESS || type != REG_SZ) {
                 ASSERT_FORCE(RegCloseKey(conn_key) == ERROR_SUCCESS)

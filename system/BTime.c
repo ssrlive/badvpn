@@ -31,8 +31,8 @@
 
 #ifndef BADVPN_PLUGIN
 struct _BTime_global btime_global = {
-    #ifndef NDEBUG
+//    #ifndef NDEBUG
     0
-    #endif
+//    #endif
 };
 #endif

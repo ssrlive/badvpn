@@ -173,6 +173,8 @@ static void datagram_abort (BDatagram *o)
 
 static void start_send (BDatagram *o)
 {
+    WSABUF buf;
+
     DebugError_AssertNoError(&o->d_err);
     ASSERT(!o->aborted)
     ASSERT(o->send.inited)
@@ -183,13 +185,16 @@ static void start_send (BDatagram *o)
     // convert destination address
     addr_socket_to_sys(&o->send.sysaddr, o->send.remote_addr);
     
-    WSABUF buf;
     buf.buf = (char *)o->send.data;
     buf.len = (o->send.data_len > ULONG_MAX ? ULONG_MAX : o->send.data_len);
     
     memset(&o->send.olap.olap, 0, sizeof(o->send.olap.olap));
     
     if (o->fnWSASendMsg) {
+        int sum;
+        WSACMSGHDR *cmsg;
+        int res;
+
         o->send.msg.name = &o->send.sysaddr.addr.generic;
         o->send.msg.namelen = o->send.sysaddr.len;
         o->send.msg.lpBuffers = &buf;
@@ -198,26 +203,28 @@ static void start_send (BDatagram *o)
         o->send.msg.Control.len = sizeof(o->send.cdata);
         o->send.msg.dwFlags = 0;
         
-        int sum = 0;
+        sum = 0;
         
-        WSACMSGHDR *cmsg = WSA_CMSG_FIRSTHDR(&o->send.msg);
+        cmsg = WSA_CMSG_FIRSTHDR(&o->send.msg);
         
         switch (o->send.local_addr.type) {
             case BADDR_TYPE_IPV4: {
+                struct in_pktinfo *pktinfo;
                 memset(cmsg, 0, WSA_CMSG_SPACE(sizeof(struct in_pktinfo)));
                 cmsg->cmsg_level = IPPROTO_IP;
                 cmsg->cmsg_type = IP_PKTINFO;
                 cmsg->cmsg_len = WSA_CMSG_LEN(sizeof(struct in_pktinfo));
-                struct in_pktinfo *pktinfo = (struct in_pktinfo *)WSA_CMSG_DATA(cmsg);
+                pktinfo = (struct in_pktinfo *)WSA_CMSG_DATA(cmsg);
                 pktinfo->ipi_addr.s_addr = o->send.local_addr.ipv4;
                 sum += WSA_CMSG_SPACE(sizeof(struct in_pktinfo));
             } break;
             case BADDR_TYPE_IPV6: {
+                struct in6_pktinfo *pktinfo;
                 memset(cmsg, 0, WSA_CMSG_SPACE(sizeof(struct in6_pktinfo)));
                 cmsg->cmsg_level = IPPROTO_IPV6;
                 cmsg->cmsg_type = IPV6_PKTINFO;
                 cmsg->cmsg_len = WSA_CMSG_LEN(sizeof(struct in6_pktinfo));
-                struct in6_pktinfo *pktinfo = (struct in6_pktinfo *)WSA_CMSG_DATA(cmsg);
+                pktinfo = (struct in6_pktinfo *)WSA_CMSG_DATA(cmsg);
                 memcpy(pktinfo->ipi6_addr.s6_addr, o->send.local_addr.ipv6, 16);
                 sum += WSA_CMSG_SPACE(sizeof(struct in6_pktinfo));
             } break;
@@ -230,7 +237,7 @@ static void start_send (BDatagram *o)
         }
         
         // send
-        int res = o->fnWSASendMsg(o->sock, &o->send.msg, 0, NULL, &o->send.olap.olap, NULL);
+        res = o->fnWSASendMsg(o->sock, &o->send.msg, 0, NULL, &o->send.olap.olap, NULL);
         if (res == SOCKET_ERROR && WSAGetLastError() != WSA_IO_PENDING) {
             report_error(o);
             return;
@@ -250,6 +257,8 @@ static void start_send (BDatagram *o)
 
 static void start_recv (BDatagram *o)
 {
+    WSABUF buf;
+
     DebugError_AssertNoError(&o->d_err);
     ASSERT(!o->aborted)
     ASSERT(o->recv.inited)
@@ -257,13 +266,14 @@ static void start_recv (BDatagram *o)
     ASSERT(!o->recv.data_busy)
     ASSERT(o->recv.started)
     
-    WSABUF buf;
     buf.buf = (char *)o->recv.data;
     buf.len = (o->recv.mtu > ULONG_MAX ? ULONG_MAX : o->recv.mtu);
     
     memset(&o->recv.olap.olap, 0, sizeof(o->recv.olap.olap));
     
     if (o->fnWSARecvMsg) {
+        int res;
+
         o->recv.msg.name = &o->recv.sysaddr.addr.generic;
         o->recv.msg.namelen = sizeof(o->recv.sysaddr.addr);
         o->recv.msg.lpBuffers = &buf;
@@ -273,18 +283,21 @@ static void start_recv (BDatagram *o)
         o->recv.msg.dwFlags = 0;
         
         // recv
-        int res = o->fnWSARecvMsg(o->sock, &o->recv.msg, NULL, &o->recv.olap.olap, NULL);
+        res = o->fnWSARecvMsg(o->sock, &o->recv.msg, NULL, &o->recv.olap.olap, NULL);
         if (res == SOCKET_ERROR && WSAGetLastError() != WSA_IO_PENDING) {
             BLog(BLOG_ERROR, "WSARecvMsg failed (%d)", WSAGetLastError());
             report_error(o);
             return;
         }
     } else {
+        DWORD flags;
+        int res;
+
         o->recv.sysaddr.len = sizeof(o->recv.sysaddr.addr);
         
         // recv
-        DWORD flags = 0;
-        int res = WSARecvFrom(o->sock, &buf, 1, NULL, &flags, &o->recv.sysaddr.addr.generic, &o->recv.sysaddr.len, &o->recv.olap.olap, NULL);
+        flags = 0;
+        res = WSARecvFrom(o->sock, &buf, 1, NULL, &flags, &o->recv.sysaddr.addr.generic, &o->recv.sysaddr.len, &o->recv.olap.olap, NULL);
         if (res == SOCKET_ERROR && WSAGetLastError() != WSA_IO_PENDING) {
             BLog(BLOG_ERROR, "WSARecvFrom failed (%d)", WSAGetLastError());
             report_error(o);
@@ -451,7 +464,8 @@ static void recv_olap_handler (BDatagram *o, int event, DWORD bytes)
     // read local address
     BIPAddr_InitInvalid(&o->recv.local_addr);
     if (o->fnWSARecvMsg) {
-        for (WSACMSGHDR *cmsg = WSA_CMSG_FIRSTHDR(&o->recv.msg); cmsg; cmsg = WSA_CMSG_NXTHDR(&o->recv.msg, cmsg)) {
+        WSACMSGHDR *cmsg;
+        for (cmsg = WSA_CMSG_FIRSTHDR(&o->recv.msg); cmsg; cmsg = WSA_CMSG_NXTHDR(&o->recv.msg, cmsg)) {
             if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO) {
                 struct in_pktinfo *pktinfo = (struct in_pktinfo *)WSA_CMSG_DATA(cmsg);
                 BIPAddr_InitIPv4(&o->recv.local_addr, pktinfo->ipi_addr.s_addr);
@@ -481,6 +495,10 @@ int BDatagram_AddressFamilySupported (int family)
 int BDatagram_Init (BDatagram *o, int family, BReactor *reactor, void *user,
                     BDatagram_handler handler)
 {
+    DWORD out_bytes;
+    GUID guid1 = WSAID_WSASENDMSG;
+    GUID guid2 = WSAID_WSARECVMSG;
+
     ASSERT(BDatagram_AddressFamilySupported(family))
     ASSERT(handler)
     BNetwork_Assert();
@@ -496,16 +514,12 @@ int BDatagram_Init (BDatagram *o, int family, BReactor *reactor, void *user,
         goto fail0;
     }
     
-    DWORD out_bytes;
-    
     // obtain WSASendMsg
-    GUID guid1 = WSAID_WSASENDMSG;
     if (WSAIoctl(o->sock, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid1, sizeof(guid1), &o->fnWSASendMsg, sizeof(o->fnWSASendMsg), &out_bytes, NULL, NULL) != 0) {
         o->fnWSASendMsg = NULL;
     }
     
     // obtain WSARecvMsg
-    GUID guid2 = WSAID_WSARECVMSG;
     if (WSAIoctl(o->sock, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid2, sizeof(guid2), &o->fnWSARecvMsg, sizeof(o->fnWSARecvMsg), &out_bytes, NULL, NULL) != 0) {
         BLog(BLOG_ERROR, "failed to obtain WSARecvMsg");
         o->fnWSARecvMsg = NULL;
@@ -570,13 +584,14 @@ void BDatagram_Free (BDatagram *o)
 
 int BDatagram_Bind (BDatagram *o, BAddr addr)
 {
+    struct BDatagram_sys_addr sysaddr;
+
     DebugObject_Access(&o->d_obj);
     DebugError_AssertNoError(&o->d_err);
     ASSERT(!o->aborted)
     ASSERT(BDatagram_AddressFamilySupported(addr.type))
     
     // translate address
-    struct BDatagram_sys_addr sysaddr;
     addr_socket_to_sys(&sysaddr, addr);
     
     // bind

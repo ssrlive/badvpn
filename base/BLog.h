@@ -201,6 +201,7 @@ void BLog_Begin (void)
 
 void BLog_AppendVarArg (const char *fmt, va_list vl)
 {
+    int w;
     ASSERT(blog_global.initialized)
 #ifndef NDEBUG
     ASSERT(blog_global.logging)
@@ -208,7 +209,7 @@ void BLog_AppendVarArg (const char *fmt, va_list vl)
     ASSERT(blog_global.logbuf_pos >= 0)
     ASSERT(blog_global.logbuf_pos < sizeof(blog_global.logbuf))
     
-    int w = vsnprintf(blog_global.logbuf + blog_global.logbuf_pos, sizeof(blog_global.logbuf) - blog_global.logbuf_pos, fmt, vl);
+    w = vsnprintf(blog_global.logbuf + blog_global.logbuf_pos, sizeof(blog_global.logbuf) - blog_global.logbuf_pos, fmt, vl);
     
     if (w >= sizeof(blog_global.logbuf) - blog_global.logbuf_pos) {
         blog_global.logbuf_pos = sizeof(blog_global.logbuf) - 1;
@@ -219,12 +220,12 @@ void BLog_AppendVarArg (const char *fmt, va_list vl)
 
 void BLog_Append (const char *fmt, ...)
 {
+    va_list vl;
     ASSERT(blog_global.initialized)
 #ifndef NDEBUG
     ASSERT(blog_global.logging)
 #endif
     
-    va_list vl;
     va_start(vl, fmt);
     BLog_AppendVarArg(fmt, vl);
     va_end(vl);
@@ -232,6 +233,7 @@ void BLog_Append (const char *fmt, ...)
 
 void BLog_AppendBytes (MemRef data)
 {
+    size_t avail;
     ASSERT(blog_global.initialized)
 #ifndef NDEBUG
     ASSERT(blog_global.logging)
@@ -239,7 +241,7 @@ void BLog_AppendBytes (MemRef data)
     ASSERT(blog_global.logbuf_pos >= 0)
     ASSERT(blog_global.logbuf_pos < sizeof(blog_global.logbuf))
     
-    size_t avail = (sizeof(blog_global.logbuf) - 1) - blog_global.logbuf_pos;
+    avail = (sizeof(blog_global.logbuf) - 1) - blog_global.logbuf_pos;
     data.len = (data.len > avail ? avail : data.len);
     
     memcpy(blog_global.logbuf + blog_global.logbuf_pos, data.ptr, data.len);
@@ -289,6 +291,7 @@ void BLog_LogToChannelVarArg (int channel, int level, const char *fmt, va_list v
 
 void BLog_LogToChannel (int channel, int level, const char *fmt, ...)
 {
+    va_list vl;
     ASSERT(blog_global.initialized)
     ASSERT(channel >= 0 && channel < BLOG_NUM_CHANNELS)
     ASSERT(level >= BLOG_ERROR && level <= BLOG_DEBUG)
@@ -297,7 +300,6 @@ void BLog_LogToChannel (int channel, int level, const char *fmt, ...)
         return;
     }
     
-    va_list vl;
     va_start(vl, fmt);
     
     BLog_Begin();
@@ -325,6 +327,7 @@ void BLog_LogViaFuncVarArg (BLog_logfunc func, void *arg, int channel, int level
 
 void BLog_LogViaFunc (BLog_logfunc func, void *arg, int channel, int level, const char *fmt, ...)
 {
+    va_list vl;
     ASSERT(blog_global.initialized)
     ASSERT(channel >= 0 && channel < BLOG_NUM_CHANNELS)
     ASSERT(level >= BLOG_ERROR && level <= BLOG_DEBUG)
@@ -333,7 +336,6 @@ void BLog_LogViaFunc (BLog_logfunc func, void *arg, int channel, int level, cons
         return;
     }
     
-    va_list vl;
     va_start(vl, fmt);
     
     BLog_Begin();
@@ -355,9 +357,9 @@ static BLogContext BLog_RootContext (void)
 
 static BLogContext BLog_MakeContext (BLog_logfunc logfunc, void *logfunc_user)
 {
+    BLogContext context;
     ASSERT(logfunc)
     
-    BLogContext context;
     context.logfunc = logfunc;
     context.logfunc_user = logfunc_user;
     return context;

@@ -47,9 +47,13 @@ These connections are used for transferring network data (Ethernet frames), and 
 
 NCD only works on Linux. Tun2socks works on Linux and Windows. The P2P VPN works on Linux, Windows and FreeBSD (not tested often).
 
-To run `cmake` successfully, install the following libraries
+To run `cmake` successfully, please install the following libraries first
 ```
 sudo apt install libssl-dev libnspr4-dev libnss3-dev -y
+```
+or 
+```
+sudo yum install nss nss-devel nspr nspr-devel -y
 ```
 
 ## License

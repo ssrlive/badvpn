@@ -110,12 +110,13 @@ void free_up_io (BSocksClient *o)
 
 int reserve_buffer (BSocksClient *o, bsize_t size)
 {
+    char *buffer;
     if (size.is_overflow) {
         BLog(BLOG_ERROR, "size overflow");
         return 0;
     }
     
-    char *buffer = (char *)BRealloc(o->buffer, size.value);
+    buffer = (char *)BRealloc(o->buffer, size.value);
     if (!buffer) {
         BLog(BLOG_ERROR, "BRealloc failed");
         return 0;
@@ -146,6 +147,10 @@ void do_receive (BSocksClient *o)
 
 void connector_handler (BSocksClient* o, int is_error)
 {
+    bsize_t size;
+    struct socks_client_hello_header header;
+    size_t i;
+
     DebugObject_Access(&o->d_obj);
     ASSERT(o->state == STATE_CONNECTING)
     
@@ -173,7 +178,7 @@ void connector_handler (BSocksClient* o, int is_error)
     }
     
     // allocate buffer for sending hello
-    bsize_t size = bsize_add(
+    size = bsize_add(
         bsize_fromsize(sizeof(struct socks_client_hello_header)), 
         bsize_mul(
             bsize_fromsize(o->num_auth_info),
@@ -185,13 +190,12 @@ void connector_handler (BSocksClient* o, int is_error)
     }
     
     // write hello header
-    struct socks_client_hello_header header;
     header.ver = hton8(SOCKS_VERSION);
     header.nmethods = hton8(o->num_auth_info);
     memcpy(o->buffer, &header, sizeof(header));
     
     // write hello methods
-    for (size_t i = 0; i < o->num_auth_info; i++) {
+    for (i = 0; i < o->num_auth_info; i++) {
         struct socks_client_hello_method method;
         method.method = hton8(o->auth_info[i].auth_type);
         memcpy(o->buffer + sizeof(header) + i * sizeof(method), &method, sizeof(method));
@@ -242,9 +246,12 @@ void recv_handler_done (BSocksClient *o, int data_len)
     
     switch (o->state) {
         case STATE_SENT_HELLO: {
+            struct socks_server_hello imsg;
+            size_t auth_index;
+            const struct BSocksClient_auth_info *ai;
+
             BLog(BLOG_DEBUG, "received hello");
             
-            struct socks_server_hello imsg;
             memcpy(&imsg, o->buffer, sizeof(imsg));
             
             if (ntoh8(imsg.ver) != SOCKS_VERSION) {
@@ -252,7 +259,6 @@ void recv_handler_done (BSocksClient *o, int data_len)
                 goto fail;
             }
             
-            size_t auth_index;
             for (auth_index = 0; auth_index < o->num_auth_info; auth_index++) {
                 if (o->auth_info[auth_index].auth_type == ntoh8(imsg.method)) {
                     break;
@@ -264,7 +270,7 @@ void recv_handler_done (BSocksClient *o, int data_len)
                 goto fail;
             }
             
-            const struct BSocksClient_auth_info *ai = &o->auth_info[auth_index];
+            ai = &o->auth_info[auth_index];
             
             switch (ai->auth_type) {
                 case SOCKS_METHOD_NO_AUTHENTICATION_REQUIRED: {
@@ -274,6 +280,8 @@ void recv_handler_done (BSocksClient *o, int data_len)
                 } break;
                 
                 case SOCKS_METHOD_USERNAME_PASSWORD: {
+                    bsize_t size;
+                    char *ptr;
                     BLog(BLOG_DEBUG, "password authentication");
                     
                     if (ai->password.username_len == 0 || ai->password.username_len > 255 ||
@@ -284,13 +292,13 @@ void recv_handler_done (BSocksClient *o, int data_len)
                     }
                     
                     // allocate password packet
-                    bsize_t size = bsize_fromsize(1 + 1 + ai->password.username_len + 1 + ai->password.password_len);
+                    size = bsize_fromsize(1 + 1 + ai->password.username_len + 1 + ai->password.password_len);
                     if (!reserve_buffer(o, size)) {
                         goto fail;
                     }
                     
                     // write password packet
-                    char *ptr = o->buffer;
+                    ptr = o->buffer;
                     *ptr++ = 1;
                     *ptr++ = ai->password.username_len;
                     memcpy(ptr, ai->password.username, ai->password.username_len);
@@ -311,9 +319,10 @@ void recv_handler_done (BSocksClient *o, int data_len)
         } break;
         
         case STATE_SENT_REQUEST: {
+            int addr_len;
+            struct socks_reply_header imsg;
             BLog(BLOG_DEBUG, "received reply header");
             
-            struct socks_reply_header imsg;
             memcpy(&imsg, o->buffer, sizeof(imsg));
             
             if (ntoh8(imsg.ver) != SOCKS_VERSION) {
@@ -326,7 +335,6 @@ void recv_handler_done (BSocksClient *o, int data_len)
                 goto fail;
             }
             
-            int addr_len;
             switch (ntoh8(imsg.atyp)) {
                 case SOCKS_ATYP_IPV4:
                     addr_len = sizeof(struct socks_addr_ipv4);
@@ -400,10 +408,11 @@ void send_handler_done (BSocksClient *o)
     
     switch (o->state) {
         case STATE_SENDING_HELLO: {
+            bsize_t size;
             BLog(BLOG_DEBUG, "sent hello");
             
             // allocate buffer for receiving hello
-            bsize_t size = bsize_fromsize(sizeof(struct socks_server_hello));
+            size = bsize_fromsize(sizeof(struct socks_server_hello));
             if (!reserve_buffer(o, size)) {
                 goto fail;
             }
@@ -416,10 +425,11 @@ void send_handler_done (BSocksClient *o)
         } break;
         
         case STATE_SENDING_REQUEST: {
+            bsize_t size;
             BLog(BLOG_DEBUG, "sent request");
             
             // allocate buffer for receiving reply
-            bsize_t size = bsize_add(
+            size = bsize_add(
                 bsize_fromsize(sizeof(struct socks_reply_header)),
                 bsize_max(bsize_fromsize(sizeof(struct socks_addr_ipv4)), bsize_fromsize(sizeof(struct socks_addr_ipv6)))
             );
@@ -435,10 +445,11 @@ void send_handler_done (BSocksClient *o)
         } break;
         
         case STATE_SENDING_PASSWORD: {
+            bsize_t size;
             BLog(BLOG_DEBUG, "send password");
             
             // allocate buffer for receiving reply
-            bsize_t size = bsize_fromsize(2);
+            size = bsize_fromsize(2);
             if (!reserve_buffer(o, size)) {
                 goto fail;
             }
@@ -462,6 +473,7 @@ fail:
 
 void auth_finished (BSocksClient *o)
 {
+    struct socks_request_header header;
     // allocate request buffer
     bsize_t size = bsize_fromsize(sizeof(struct socks_request_header));
     switch (o->dest_addr.type) {
@@ -474,21 +486,20 @@ void auth_finished (BSocksClient *o)
     }
     
     // write request
-    struct socks_request_header header;
     header.ver = hton8(SOCKS_VERSION);
     header.cmd = hton8(SOCKS_CMD_CONNECT);
     header.rsv = hton8(0);
     switch (o->dest_addr.type) {
         case BADDR_TYPE_IPV4: {
-            header.atyp = hton8(SOCKS_ATYP_IPV4);
             struct socks_addr_ipv4 addr;
+            header.atyp = hton8(SOCKS_ATYP_IPV4);
             addr.addr = o->dest_addr.ipv4.ip;
             addr.port = o->dest_addr.ipv4.port;
             memcpy(o->buffer + sizeof(header), &addr, sizeof(addr));
         } break;
         case BADDR_TYPE_IPV6: {
-            header.atyp = hton8(SOCKS_ATYP_IPV6);
             struct socks_addr_ipv6 addr;
+            header.atyp = hton8(SOCKS_ATYP_IPV6);
             memcpy(addr.addr, o->dest_addr.ipv6.ip, sizeof(o->dest_addr.ipv6.ip));
             addr.port = o->dest_addr.ipv6.port;
             memcpy(o->buffer + sizeof(header), &addr, sizeof(addr));
@@ -527,10 +538,11 @@ int BSocksClient_Init (BSocksClient *o,
                        BAddr server_addr, const struct BSocksClient_auth_info *auth_info, size_t num_auth_info,
                        BAddr dest_addr, BSocksClient_handler handler, void *user, BReactor *reactor)
 {
+    size_t i;
     ASSERT(!BAddr_IsInvalid(&server_addr))
     ASSERT(dest_addr.type == BADDR_TYPE_IPV4 || dest_addr.type == BADDR_TYPE_IPV6)
 #ifndef NDEBUG
-    for (size_t i = 0; i < num_auth_info; i++) {
+    for (i = 0; i < num_auth_info; i++) {
         ASSERT(auth_info[i].auth_type == SOCKS_METHOD_NO_AUTHENTICATION_REQUIRED ||
                auth_info[i].auth_type == SOCKS_METHOD_USERNAME_PASSWORD)
     }

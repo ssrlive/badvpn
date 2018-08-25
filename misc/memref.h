@@ -159,9 +159,10 @@ static int MemRef_Equal (MemRef o, MemRef other)
 
 static int MemRef_FindChar (MemRef o, char ch, size_t *out_index)
 {
+    size_t i;
     ASSERT(o.ptr)
     
-    for (size_t i = 0; i < o.len; i++) {
+    for (i = 0; i < o.len; i++) {
         if (o.ptr[i] == ch) {
             if (out_index) {
                 *out_index = i;

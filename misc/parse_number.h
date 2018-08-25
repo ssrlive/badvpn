@@ -222,9 +222,10 @@ void generate_decimal_repr (uintmax_t x, char *out, int repr_size)
 
 int generate_decimal_repr_string (uintmax_t x, char *out)
 {
+    int repr_size;
     ASSERT(out)
     
-    int repr_size = compute_decimal_repr_size(x);
+    repr_size = compute_decimal_repr_size(x);
     generate_decimal_repr(x, out, repr_size);
     out[repr_size] = '\0';
     

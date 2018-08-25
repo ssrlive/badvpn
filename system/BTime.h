@@ -108,12 +108,15 @@ static void BTime_Init (void)
 
 static btime_t btime_gettime (void)
 {
+#if defined(BADVPN_USE_WINAPI)
+    LARGE_INTEGER count;
+    LARGE_INTEGER freq;
+#endif
+
     ASSERT(btime_global.initialized)
     
     #if defined(BADVPN_USE_WINAPI)
     
-    LARGE_INTEGER count;
-    LARGE_INTEGER freq;
     ASSERT_FORCE(QueryPerformanceCounter(&count))
     ASSERT_FORCE(QueryPerformanceFrequency(&freq))
     return (((count.QuadPart - btime_global.start_time.QuadPart) * 1000) / freq.QuadPart);

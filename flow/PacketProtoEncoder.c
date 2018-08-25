@@ -50,11 +50,11 @@ static void output_handler_recv (PacketProtoEncoder *enc, uint8_t *data)
 
 static void input_handler_done (PacketProtoEncoder *enc, int in_len)
 {
+    struct packetproto_header pp;
     ASSERT(enc->output_packet)
     DebugObject_Access(&enc->d_obj);
     
     // write length
-    struct packetproto_header pp;
     pp.len = htol16(in_len);
     memcpy(enc->output_packet, &pp, sizeof(pp));
     

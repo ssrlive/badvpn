@@ -65,11 +65,12 @@ int BPendingGroup_HasJobs (BPendingGroup *g)
 
 void BPendingGroup_ExecuteJob (BPendingGroup *g)
 {
+    BSmallPending *p;
     ASSERT(!BPending__List_IsEmpty(&g->jobs))
     DebugObject_Access(&g->d_obj);
     
     // get a job
-    BSmallPending *p = BPending__List_First(&g->jobs);
+    p = BPending__List_First(&g->jobs);
     ASSERT(!BPending__ListIsRemoved(p))
     ASSERT(p->pending)
     

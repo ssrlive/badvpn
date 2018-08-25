@@ -42,9 +42,9 @@
  * Counter for detecting leaks.
  */
 typedef struct {
-#ifndef NDEBUG
+//#ifndef NDEBUG
     int32_t c;
-#endif
+//#endif
 } DebugCounter;
 
 #ifndef NDEBUG

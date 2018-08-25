@@ -45,11 +45,13 @@
  */
 static char * b_strdup (const char *str)
 {
+    size_t len;
+    char *s;
     ASSERT(str)
     
-    size_t len = strlen(str);
+    len = strlen(str);
     
-    char *s = (char *)malloc(len + 1);
+    s = (char *)malloc(len + 1);
     if (!s) {
         return NULL;
     }
@@ -66,13 +68,14 @@ static char * b_strdup (const char *str)
  */
 static char * b_strdup_bin (const char *str, size_t len)
 {
+    char *s;
     ASSERT(str)
     
     if (len == SIZE_MAX) {
         return NULL;
     }
     
-    char *s = (char *)malloc(len + 1);
+    s = (char *)malloc(len + 1);
     if (!s) {
         return NULL;
     }

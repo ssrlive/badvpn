@@ -39,9 +39,9 @@ struct _BLog_channel blog_channel_list[] = {
 };
 
 struct _BLog_global blog_global = {
-    #ifndef NDEBUG
+//    #ifndef NDEBUG
     0
-    #endif
+//    #endif
 };
 
 #endif
