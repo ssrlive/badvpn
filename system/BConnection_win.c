@@ -395,7 +395,7 @@ static void connection_send_olap_handler (BConnection *o, int event, DWORD bytes
     }
     
     ASSERT(bytes > 0)
-    ASSERT(bytes <= o->send.busy_data_len)
+    ASSERT(bytes <= (DWORD)o->send.busy_data_len)
     
     // done
     StreamPassInterface_Done(&o->send.iface, bytes);
@@ -430,7 +430,7 @@ static void connection_recv_olap_handler (BConnection *o, int event, DWORD bytes
     }
     
     ASSERT(bytes > 0)
-    ASSERT(bytes <= o->recv.busy_data_len)
+    ASSERT(bytes <= (DWORD)o->recv.busy_data_len)
     
     // done
     StreamRecvInterface_Done(&o->recv.iface, bytes);

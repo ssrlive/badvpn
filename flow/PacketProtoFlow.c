@@ -37,7 +37,7 @@ int PacketProtoFlow_Init (PacketProtoFlow *o, int input_mtu, int num_packets, Pa
     ASSERT(input_mtu >= 0)
     ASSERT(input_mtu <= PACKETPROTO_MAXPAYLOAD)
     ASSERT(num_packets > 0)
-    ASSERT(PacketPassInterface_GetMTU(output) >= PACKETPROTO_ENCLEN(input_mtu))
+    ASSERT(PacketPassInterface_GetMTU(output) >= (int)PACKETPROTO_ENCLEN(input_mtu))
     
     // init async input
     BufferWriter_Init(&o->ainput, input_mtu, pg);

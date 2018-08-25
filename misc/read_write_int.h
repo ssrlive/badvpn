@@ -111,71 +111,71 @@ static uint64_t badvpn_read_be64 (const char *c_ptr)
 static void badvpn_write_le8 (uint8_t x, char *c_ptr)
 {
     uint8_t *ptr = (uint8_t *)c_ptr;
-    ptr[0] = x >> 0;
+    ptr[0] = (uint8_t)(x >> 0);
 }
 
 static void badvpn_write_le16 (uint16_t x, char *c_ptr)
 {
     uint8_t *ptr = (uint8_t *)c_ptr;
-    ptr[1] = x >> 8;
-    ptr[0] = x >> 0;
+    ptr[1] = (uint8_t)(x >> 8);
+    ptr[0] = (uint8_t)(x >> 0);
 }
 
 static void badvpn_write_le32 (uint32_t x, char *c_ptr)
 {
     uint8_t *ptr = (uint8_t *)c_ptr;
-    ptr[3] = x >> 24;
-    ptr[2] = x >> 16;
-    ptr[1] = x >> 8;
-    ptr[0] = x >> 0;
+    ptr[3] = (uint8_t)(x >> 24);
+    ptr[2] = (uint8_t)(x >> 16);
+    ptr[1] = (uint8_t)(x >> 8);
+    ptr[0] = (uint8_t)(x >> 0);
 }
 
 static void badvpn_write_le64 (uint64_t x, char *c_ptr)
 {
     uint8_t *ptr = (uint8_t *)c_ptr;
-    ptr[7] = x >> 56;
-    ptr[6] = x >> 48;
-    ptr[5] = x >> 40;
-    ptr[4] = x >> 32;
-    ptr[3] = x >> 24;
-    ptr[2] = x >> 16;
-    ptr[1] = x >> 8;
-    ptr[0] = x >> 0;
+    ptr[7] = (uint8_t)(x >> 56);
+    ptr[6] = (uint8_t)(x >> 48);
+    ptr[5] = (uint8_t)(x >> 40);
+    ptr[4] = (uint8_t)(x >> 32);
+    ptr[3] = (uint8_t)(x >> 24);
+    ptr[2] = (uint8_t)(x >> 16);
+    ptr[1] = (uint8_t)(x >> 8);
+    ptr[0] = (uint8_t)(x >> 0);
 }
 
 static void badvpn_write_be8 (uint8_t x, char *c_ptr)
 {
     uint8_t *ptr = (uint8_t *)c_ptr;
-    ptr[0] = x >> 0;
+    ptr[0] = (uint8_t)(x >> 0);
 }
 
 static void badvpn_write_be16 (uint16_t x, char *c_ptr)
 {
     uint8_t *ptr = (uint8_t *)c_ptr;
-    ptr[0] = x >> 8;
-    ptr[1] = x >> 0;
+    ptr[0] = (uint8_t)(x >> 8);
+    ptr[1] = (uint8_t)(x >> 0);
 }
 
 static void badvpn_write_be32 (uint32_t x, char *c_ptr)
 {
     uint8_t *ptr = (uint8_t *)c_ptr;
-    ptr[0] = x >> 24;
-    ptr[1] = x >> 16;
-    ptr[2] = x >> 8;
-    ptr[3] = x >> 0;
+    ptr[0] = (uint8_t)(x >> 24);
+    ptr[1] = (uint8_t)(x >> 16);
+    ptr[2] = (uint8_t)(x >> 8);
+    ptr[3] = (uint8_t)(x >> 0);
 }
 
 static void badvpn_write_be64 (uint64_t x, char *c_ptr)
 {
     uint8_t *ptr = (uint8_t *)c_ptr;
-    ptr[0] = x >> 56;
-    ptr[1] = x >> 48;
-    ptr[2] = x >> 40;
-    ptr[3] = x >> 32;
-    ptr[4] = x >> 24;
-    ptr[5] = x >> 16;
-    ptr[6] = x >> 8;
-    ptr[7] = x >> 0;
+    ptr[0] = (uint8_t)(x >> 56);
+    ptr[1] = (uint8_t)(x >> 48);
+    ptr[2] = (uint8_t)(x >> 40);
+    ptr[3] = (uint8_t)(x >> 32);
+    ptr[4] = (uint8_t)(x >> 24);
+    ptr[5] = (uint8_t)(x >> 16);
+    ptr[6] = (uint8_t)(x >> 8);
+    ptr[7] = (uint8_t)(x >> 0);
 }
 
 #endif

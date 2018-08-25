@@ -219,7 +219,7 @@ int ipaddr6_parse_ipv6_prefix (MemRef str, int *out_num)
         return 0;
     }
     
-    *out_num = d;
+    *out_num = (int)d;
     return 1;
 }
 

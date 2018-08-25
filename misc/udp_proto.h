@@ -162,7 +162,7 @@ static int udp_check (const uint8_t *data, int data_len, struct udp_header *out_
     if (udp_length < sizeof(*out_header)) {
         return 0;
     }
-    if (udp_length > sizeof(*out_header) + data_len) {
+    if (udp_length > (int)sizeof(*out_header) + data_len) {
         return 0;
     }
     

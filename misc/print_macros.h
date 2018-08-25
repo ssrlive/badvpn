@@ -34,7 +34,7 @@
 #ifndef BADVPN_PRINT_MACROS
 #define BADVPN_PRINT_MACROS
 
-#ifdef _MSC_VER
+#if 0 // #ifdef _MSC_VER
 
 // size_t
 #define PRIsz "Iu"

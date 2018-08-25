@@ -86,7 +86,7 @@ int ipaddr_parse_ipv4_addr (MemRef name, uint32_t *out_addr)
             return 0;
         }
         
-        ((uint8_t *)out_addr)[i] = d;
+        ((uint8_t *)out_addr)[i] = (uint8_t)d;
         
         if (i == 3) {
             return 1;
@@ -107,7 +107,7 @@ int ipaddr_parse_ipv4_prefix (MemRef str, int *num)
         return 0;
     }
     
-    *num = d;
+    *num = (int)d;
     return 1;
 }
 

@@ -697,7 +697,7 @@ int BAddr_Parse2 (BAddr *addr, char *str, char *name, int name_len, int noresolv
     if (conv_res < 0 || conv_res > UINT16_MAX) {
         return 0;
     }
-    port = conv_res;
+    port = (uint16_t)conv_res;
     port = hton16(port);
     
     // initialize hints
@@ -734,7 +734,7 @@ int BAddr_Parse2 (BAddr *addr, char *str, char *name, int name_len, int noresolv
     freeaddrinfo(addrs);
     
     if (name) {
-        if (strlen(addr_str) >= name_len) {
+        if (strlen(addr_str) >= (size_t)name_len) {
             return 0;
         }
         strcpy(name, addr_str);

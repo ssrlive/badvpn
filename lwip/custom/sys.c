@@ -33,5 +33,5 @@
 
 u32_t sys_now (void)
 {
-    return btime_gettime();
+    return (u32_t) btime_gettime();
 }

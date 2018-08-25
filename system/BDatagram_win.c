@@ -406,9 +406,9 @@ static void send_olap_handler (BDatagram *o, int event, DWORD bytes)
     }
     
     ASSERT(bytes >= 0)
-    ASSERT(bytes <= o->send.data_len)
+    ASSERT(bytes <= (DWORD)o->send.data_len)
     
-    if (bytes < o->send.data_len) {
+    if (bytes < (DWORD)o->send.data_len) {
         BLog(BLOG_ERROR, "sent too little");
     }
     
@@ -452,7 +452,7 @@ static void recv_olap_handler (BDatagram *o, int event, DWORD bytes)
     }
     
     ASSERT(bytes >= 0)
-    ASSERT(bytes <= o->recv.mtu)
+    ASSERT(bytes <= (DWORD)o->recv.mtu)
     
     if (o->fnWSARecvMsg) {
         o->recv.sysaddr.len = o->recv.msg.namelen;

@@ -87,7 +87,7 @@ static void recv_olap_handler (BTap *o, int event, DWORD bytes)
     }
     
     ASSERT(bytes >= 0)
-    ASSERT(bytes <= o->frame_mtu)
+    ASSERT(bytes <= (DWORD)o->frame_mtu)
     
     // done
     PacketRecvInterface_Done(&o->output, bytes);
@@ -562,9 +562,9 @@ void BTap_Send (BTap *o, uint8_t *data, int data_len)
         BLog(BLOG_ERROR, "write operation failed");
     } else {
         ASSERT(bytes >= 0)
-        ASSERT(bytes <= data_len)
+        ASSERT(bytes <= (DWORD)data_len)
         
-        if (bytes < data_len) {
+        if (bytes < (DWORD)data_len) {
             BLog(BLOG_ERROR, "write operation didn't write everything");
         }
     }

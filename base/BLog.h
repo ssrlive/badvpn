@@ -211,7 +211,7 @@ void BLog_AppendVarArg (const char *fmt, va_list vl)
     
     w = vsnprintf(blog_global.logbuf + blog_global.logbuf_pos, sizeof(blog_global.logbuf) - blog_global.logbuf_pos, fmt, vl);
     
-    if (w >= sizeof(blog_global.logbuf) - blog_global.logbuf_pos) {
+    if (w >= (int)(sizeof(blog_global.logbuf) - blog_global.logbuf_pos)) {
         blog_global.logbuf_pos = sizeof(blog_global.logbuf) - 1;
     } else {
         blog_global.logbuf_pos += w;

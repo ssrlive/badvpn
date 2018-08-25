@@ -366,7 +366,7 @@ static void wait_for_events (BReactor *bsys)
         bytes = 0;
         key = 0;
         olap = NULL;
-        res = GetQueuedCompletionStatus(bsys->iocp_handle, &bytes, &key, (OVERLAPPED **)&olap, (have_timeout ? timeout_rel_trunc : INFINITE));
+        res = GetQueuedCompletionStatus(bsys->iocp_handle, &bytes, &key, (OVERLAPPED **)&olap, (DWORD)(have_timeout ? timeout_rel_trunc : INFINITE));
         
         ASSERT_FORCE(olap || have_timeout)
         
@@ -539,7 +539,9 @@ static void wait_for_events (BReactor *bsys)
         
         #endif
         
+#ifndef BADVPN_USE_WINAPI
     try_again:
+#endif
         if (have_timeout) {
             // get current time
             now = btime_gettime();
