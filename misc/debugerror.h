@@ -50,9 +50,11 @@
 #endif
 
 typedef struct {
-//    #ifndef NDEBUG
+    #ifndef NDEBUG
     BPending job;
-//    #endif
+    #else
+    int dummy_field; // struct must have at least one field
+    #endif
 } DebugError;
 
 static void DebugError_Init (DebugError *o, BPendingGroup *pg);

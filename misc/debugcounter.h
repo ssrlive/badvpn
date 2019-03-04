@@ -42,16 +42,14 @@
  * Counter for detecting leaks.
  */
 typedef struct {
-//#ifndef NDEBUG
+#ifndef NDEBUG
     int32_t c;
-//#endif
+#else
+    int dummy_field; // struct must have at least one field
+#endif
 } DebugCounter;
 
-#ifndef NDEBUG
 #define DEBUGCOUNTER_STATIC { 0 }
-#else
-#define DEBUGCOUNTER_STATIC {}
-#endif
 
 /**
  * Initializes the object.

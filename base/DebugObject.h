@@ -53,9 +53,11 @@
  * Object used for detecting leaks.
  */
 typedef struct {
-//    #ifndef NDEBUG
+    #ifndef NDEBUG
     uint32_t c;
-//    #endif
+    #else
+    int dummy_field; // struct must have at least one field
+    #endif
 } DebugObject;
 
 /**
