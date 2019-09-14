@@ -112,7 +112,7 @@ B_START_PACKED
 struct socks_addr_ipv6 {
     uint8_t addr[16];
     uint16_t port;
-} B_PACKED;    
+} B_PACKED;
 B_END_PACKED
 
 #endif
