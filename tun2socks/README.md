@@ -7,12 +7,16 @@ It can be used, for example, to forward connections through a remote SSH server.
 
 ## Introduction
 
-It was originally [Badvpn Tun2socks](https://github.com/bemasc/badvpn). [Shadowsocks](https://github.com/shadowsocks/badvpn) implemented it on Android,and used udpgw to realize UDP conversion. Now I refer to [bemasc](https://github.com/bemasc/badvpn/tree/bemasc-udp) to add SOCKS UDP ASSOCIATE to it.
+It was originally [Badvpn Tun2socks](https://github.com/bemasc/badvpn). [Shadowsocks](https://github.com/shadowsocks/badvpn) implemented it on Android,and used udpgw to realize UDP conversion. 
+
+Now I refer to [bemasc](https://github.com/bemasc/badvpn/tree/bemasc-udp) to add SOCKS UDP ASSOCIATE to it.
 
 ## Requirements
 
 Tun2socks works on Android(Platform target android-18 or above) and Linux(Not tested,please use [badvpn bemasc-udp branch](https://github.com/bemasc/badvpn/tree/bemasc-udp))
+
 --socks5-udp use SOCKS UDP ASSOCIATE,do not use it with --enable-udprelay and --udpgw-remote-server-addr
+
 
 ## Installation
 
