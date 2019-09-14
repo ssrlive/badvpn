@@ -1,0 +1,4 @@
+[submodule "tun2socks/jni/libancillary"]
+	path = tun2socks/jni/libancillary
+	url = https://github.com/shadowsocks/libancillary.git
+	branch = shadowsocks-android
