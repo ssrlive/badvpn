@@ -41,8 +41,6 @@
 
 static int addr_comparator (void *unused, BAddr *v1, BAddr *v2);
 static struct SocksUdpClient_connection * find_connection_by_addr (SocksUdpClient *o, BAddr addr);
-static void init_localhost4(uint32_t *ip4);
-static void init_localhost6(uint8_t ip6[16]);
 static void socks_state_handler(struct SocksUdpClient_connection *con, int event);
 static void datagram_state_handler(struct SocksUdpClient_connection *con, int event);
 static void send_monitor_handler (struct SocksUdpClient_connection *con);
@@ -72,17 +70,6 @@ struct SocksUdpClient_connection * find_connection_by_addr (SocksUdpClient *o, B
     return UPPER_OBJECT(tree_node, struct SocksUdpClient_connection, connections_tree_node);
 }
 
-void init_localhost4(uint32_t *ip4)
-{
-    *ip4 = 1<<24 | 127;
-}
-
-void init_localhost6(uint8_t ip6[16])
-{
-    memset(ip6, 0, 16);
-    ip6[15] = 1;
-}
-
 void socks_state_handler(struct SocksUdpClient_connection *con, int event)
 {
     switch (event) {
@@ -90,9 +77,9 @@ void socks_state_handler(struct SocksUdpClient_connection *con, int event)
             BIPAddr localhost;
             localhost.type = con->client->server_addr.type;
             if (localhost.type == BADDR_TYPE_IPV4) {
-                init_localhost4(&localhost.ipv4);
+                localhost.ipv4=0;
             } else if (localhost.type == BADDR_TYPE_IPV6) {
-                init_localhost6(localhost.ipv6);
+				memset(localhost.ipv6, 0, 16);
             } else {
                 BLog(BLOG_ERROR, "Bad address type");
             }
@@ -249,10 +236,10 @@ struct SocksUdpClient_connection *connection_init(SocksUdpClient *o, BAddr local
     BAddr socket_addr;
     socket_addr.type = local_addr.type;
     if (local_addr.type == BADDR_TYPE_IPV4) {
-        init_localhost4(&socket_addr.ipv4.ip);
+        socket_addr.ipv4.ip=0;
         socket_addr.ipv4.port = 0;
     } else if (local_addr.type == BADDR_TYPE_IPV6) {
-        init_localhost6(socket_addr.ipv6.ip);
+		memset(socket_addr.ipv6.ip, 0, 16);
         socket_addr.ipv6.port = 0;
     } else {
         BLog(BLOG_ERROR, "Unknown local address type");
