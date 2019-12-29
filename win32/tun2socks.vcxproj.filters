@@ -49,6 +49,9 @@
     <Filter Include="SocksUdpClient">
       <UniqueIdentifier>{49f5bca6-4a5b-4083-a40b-f3b658f71da1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="protocol">
+      <UniqueIdentifier>{2c7fb919-b6ec-4300-92ce-d5595c47d0b2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\tun2socks\tun2socks.c">
@@ -415,6 +418,33 @@
     </ClInclude>
     <ClInclude Include="..\socks_udp_client\SocksUdpClient.h">
       <Filter>SocksUdpClient</Filter>
+    </ClInclude>
+    <ClInclude Include="..\protocol\addr.h">
+      <Filter>protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\protocol\dataproto.h">
+      <Filter>protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\protocol\fragmentproto.h">
+      <Filter>protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\protocol\msgproto.h">
+      <Filter>protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\protocol\packetproto.h">
+      <Filter>protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\protocol\requestproto.h">
+      <Filter>protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\protocol\scproto.h">
+      <Filter>protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\protocol\spproto.h">
+      <Filter>protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\protocol\udpgw_proto.h">
+      <Filter>protocol</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -252,6 +252,15 @@
     <ClInclude Include="..\flow\StreamPassInterface.h" />
     <ClInclude Include="..\flow\StreamRecvConnector.h" />
     <ClInclude Include="..\flow\StreamRecvInterface.h" />
+    <ClInclude Include="..\protocol\addr.h" />
+    <ClInclude Include="..\protocol\dataproto.h" />
+    <ClInclude Include="..\protocol\fragmentproto.h" />
+    <ClInclude Include="..\protocol\msgproto.h" />
+    <ClInclude Include="..\protocol\packetproto.h" />
+    <ClInclude Include="..\protocol\requestproto.h" />
+    <ClInclude Include="..\protocol\scproto.h" />
+    <ClInclude Include="..\protocol\spproto.h" />
+    <ClInclude Include="..\protocol\udpgw_proto.h" />
     <ClInclude Include="..\socksclient\BSocksClient.h" />
     <ClInclude Include="..\socks_udp_client\SocksUdpClient.h" />
     <ClInclude Include="..\system\BConnection_win.h" />
