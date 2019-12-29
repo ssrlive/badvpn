@@ -1,6 +1,8 @@
 xcuserdata
 *.xcworkspace
 
+build/
+
 *.obj
 *.tlog
 *.pdb

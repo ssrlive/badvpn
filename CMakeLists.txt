@@ -362,6 +362,7 @@ endif ()
 
 # tun2socks
 if (BUILD_TUN2SOCKS)
+    add_subdirectory(socks_udp_client)
     add_subdirectory(tun2socks)
 endif ()
 
