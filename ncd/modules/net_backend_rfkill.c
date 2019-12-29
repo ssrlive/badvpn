@@ -80,7 +80,7 @@ static int find_wlan_rfill (const char *ifname, uint32_t *out_index)
             continue;
         }
         
-        char phy_path[150];
+        char phy_path[0x150];
         snprintf(phy_path, sizeof(phy_path), "%s/%s", ieee_path, e->d_name);
         
         DIR *d2 = opendir(phy_path);

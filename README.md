@@ -44,7 +44,7 @@ NCD only works on Linux. Tun2socks works on Linux and Windows. The P2P VPN works
 
 To run `cmake` successfully, please install the following libraries first
 ```
-sudo apt install libssl-dev libnspr4-dev libnss3-dev -y
+sudo apt install pkg-config libssl-dev libnspr4-dev libnss3-dev -y
 ```
 or 
 ```
