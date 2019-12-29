@@ -55,6 +55,8 @@ B_END_PACKED
 
 static int ipv6_check (uint8_t *data, int data_len, struct ipv6_header *out_header, uint8_t **out_payload, int *out_payload_len)
 {
+    uint16_t payload_length;
+
     ASSERT(data_len >= 0)
     ASSERT(out_header)
     ASSERT(out_payload)
@@ -72,7 +74,7 @@ static int ipv6_check (uint8_t *data, int data_len, struct ipv6_header *out_head
     }
     
     // check payload length
-    uint16_t payload_length = ntoh16(out_header->payload_length);
+    payload_length = ntoh16(out_header->payload_length);
     if (payload_length > data_len - sizeof(struct ipv6_header)) {
         return 0;
     }

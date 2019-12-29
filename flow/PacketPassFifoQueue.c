@@ -36,13 +36,15 @@
 
 static void schedule (PacketPassFifoQueue *o)
 {
+    PacketPassFifoQueueFlow *flow;
+
     ASSERT(!o->freeing)
     ASSERT(!o->sending_flow)
     ASSERT(!LinkedList1_IsEmpty(&o->waiting_flows_list))
     ASSERT(!BPending_IsSet(&o->schedule_job))
     
     // get first waiting flow
-    PacketPassFifoQueueFlow *flow = UPPER_OBJECT(LinkedList1_GetFirst(&o->waiting_flows_list), PacketPassFifoQueueFlow, waiting_flows_list_node);
+    flow = UPPER_OBJECT(LinkedList1_GetFirst(&o->waiting_flows_list), PacketPassFifoQueueFlow, waiting_flows_list_node);
     ASSERT(flow->queue == o)
     ASSERT(flow->is_waiting)
     
@@ -88,13 +90,15 @@ static void input_handler_send (PacketPassFifoQueueFlow *o, uint8_t *data, int d
 
 static void output_handler_done (PacketPassFifoQueue *o)
 {
+    PacketPassFifoQueueFlow *flow;
+
     DebugObject_Access(&o->d_obj);
     ASSERT(o->sending_flow)
     ASSERT(!BPending_IsSet(&o->schedule_job))
     ASSERT(!o->freeing)
     ASSERT(!o->sending_flow->is_waiting)
     
-    PacketPassFifoQueueFlow *flow = o->sending_flow;
+    flow = o->sending_flow;
     
     // set no sending flow
     o->sending_flow = NULL;

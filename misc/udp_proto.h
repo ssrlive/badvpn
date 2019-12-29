@@ -53,11 +53,12 @@ B_END_PACKED
 
 static uint32_t udp_checksum_summer (const char *data, uint16_t len)
 {
+    uint32_t t = 0;
+    uint16_t i;
+
     ASSERT(len % 2 == 0)
     
-    uint32_t t = 0;
-    
-    for (uint16_t i = 0; i < len / 2; i++) {
+    for (i = 0; i < len / 2; i++) {
         t += badvpn_read_be16(data + 2 * i);
     }
     
@@ -67,11 +68,11 @@ static uint32_t udp_checksum_summer (const char *data, uint16_t len)
 static uint16_t udp_checksum (const struct udp_header *header, const uint8_t *payload, uint16_t payload_len, uint32_t source_addr, uint32_t dest_addr)
 {
     uint32_t t = 0;
+    uint16_t x;
     
     t += udp_checksum_summer((char *)&source_addr, sizeof(source_addr));
     t += udp_checksum_summer((char *)&dest_addr, sizeof(dest_addr));
     
-    uint16_t x;
     x = hton16(IPV4_PROTOCOL_UDP);
     t += udp_checksum_summer((char *)&x, sizeof(x));
     x = hton16(sizeof(*header) + payload_len);
@@ -104,11 +105,11 @@ static uint16_t udp_checksum (const struct udp_header *header, const uint8_t *pa
 static uint16_t udp_ip6_checksum (const struct udp_header *header, const uint8_t *payload, uint16_t payload_len, const uint8_t *source_addr, const uint8_t *dest_addr)
 {
     uint32_t t = 0;
+    uint32_t x;
     
     t += udp_checksum_summer((const char *)source_addr, 16);
     t += udp_checksum_summer((const char *)dest_addr, 16);
     
-    uint32_t x;
     x = hton32(sizeof(*header) + payload_len);
     t += udp_checksum_summer((char *)&x, sizeof(x));
     x = hton32(IPV6_NEXT_UDP);
@@ -119,9 +120,9 @@ static uint16_t udp_ip6_checksum (const struct udp_header *header, const uint8_t
     if (payload_len % 2 == 0) {
         t += udp_checksum_summer((const char *)payload, payload_len);
     } else {
+        uint16_t y;
         t += udp_checksum_summer((const char *)payload, payload_len - 1);
         
-        uint16_t y;
         y = hton16(((uint16_t)payload[payload_len - 1]) << 8);
         t += udp_checksum_summer((char *)&y, sizeof(y));
     }
@@ -141,6 +142,8 @@ static uint16_t udp_ip6_checksum (const struct udp_header *header, const uint8_t
 
 static int udp_check (const uint8_t *data, int data_len, struct udp_header *out_header, uint8_t **out_payload, int *out_payload_len)
 {
+    int udp_length;
+
     ASSERT(data_len >= 0)
     ASSERT(out_header)
     ASSERT(out_payload)
@@ -155,11 +158,11 @@ static int udp_check (const uint8_t *data, int data_len, struct udp_header *out_
     data_len -= sizeof(*out_header);
     
     // verify UDP payload
-    int udp_length = ntoh16(out_header->length);
+    udp_length = ntoh16(out_header->length);
     if (udp_length < sizeof(*out_header)) {
         return 0;
     }
-    if (udp_length > sizeof(*out_header) + data_len) {
+    if (udp_length > (int)sizeof(*out_header) + data_len) {
         return 0;
     }
     

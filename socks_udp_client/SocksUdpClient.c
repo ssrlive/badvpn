@@ -116,6 +116,14 @@ void send_monitor_handler (struct SocksUdpClient_connection *con)
 
 void recv_if_handler_send(struct SocksUdpClient_connection *con, uint8_t *data, int data_len)
 {
+    struct socks_udp_header *header;
+    uint8_t *addr_data;
+    BAddr remote_addr;
+    size_t addr_size;
+    uint8_t *body_data;
+    size_t body_len;
+    SocksUdpClient *client;
+
     SocksUdpClient *o = con->client;
     DebugObject_Access(&con->client->d_obj);
     ASSERT(data_len >= 0)
@@ -129,23 +137,23 @@ void recv_if_handler_send(struct SocksUdpClient_connection *con, uint8_t *data, 
         BLog(BLOG_ERROR, "missing header");
         return;
     }
-    struct socks_udp_header *header = (struct socks_udp_header *)data;
-    uint8_t *addr_data = data + sizeof(struct socks_udp_header);
+    header = (struct socks_udp_header *)data;
+    addr_data = data + sizeof(struct socks_udp_header);
     
     // parse address
-    BAddr remote_addr;
-    size_t addr_size;
     switch (header->atyp) {
         case SOCKS_ATYP_IPV4: {
+            struct socks_addr_ipv4 *addr_ipv4;
             remote_addr.type = BADDR_TYPE_IPV4;
-            struct socks_addr_ipv4 *addr_ipv4 = (struct socks_addr_ipv4 *)addr_data;
+            addr_ipv4 = (struct socks_addr_ipv4 *)addr_data;
             remote_addr.ipv4.ip = addr_ipv4->addr;
             remote_addr.ipv4.port = addr_ipv4->port;
             addr_size = sizeof(*addr_ipv4);
         } break;
         case SOCKS_ATYP_IPV6: {
+            struct socks_addr_ipv6 *addr_ipv6;
             remote_addr.type = BADDR_TYPE_IPV6;
-            struct socks_addr_ipv6 *addr_ipv6 = (struct socks_addr_ipv6 *)addr_data;
+            addr_ipv6 = (struct socks_addr_ipv6 *)addr_data;
             memcpy(remote_addr.ipv6.ip, addr_ipv6->addr, sizeof(remote_addr.ipv6.ip));
             remote_addr.ipv6.port = addr_ipv6->port;
             addr_size = sizeof(*addr_ipv6);
@@ -156,22 +164,22 @@ void recv_if_handler_send(struct SocksUdpClient_connection *con, uint8_t *data, 
         }
     }
     
-    uint8_t *body_data = addr_data + addr_size;
-    size_t body_len = data_len - (body_data - data);
+    body_data = addr_data + addr_size;
+    body_len = data_len - (body_data - data);
     
     // check remaining data
-    if (body_len > o->udp_mtu) {
+    if (body_len > (size_t) o->udp_mtu) {
         BLog(BLOG_ERROR, "too much data");
         return;
     }
     
     // pass packet to user
-    SocksUdpClient *client = con->client;
-    client->handler_received(client->user, con->local_addr, remote_addr, body_data, body_len);
+    client = con->client;
+    client->handler_received(client->user, con->local_addr, remote_addr, body_data, (int)body_len);
 
     if (con->dns_id >= 0) {
         // This connection has only been used for a single DNS query.
-        int recv_dns_id = get_dns_id(&remote_addr, body_data, body_len);
+        int recv_dns_id = get_dns_id(&remote_addr, body_data, (int)body_len);
         if (recv_dns_id == con->dns_id) {
             // We have now forwarded the response, so this connection is no longer needed.
             connection_free(con);
@@ -189,16 +197,23 @@ struct SocksUdpClient_connection *connection_init(SocksUdpClient *o, BAddr local
                                                   const uint8_t *first_data,
                                                   int first_data_len)
 {
+    char buffer[BADDR_MAX_PRINT_LEN] = { 0 };
+    struct SocksUdpClient_connection *con;
+    BPendingGroup *pg;
+    BAddr socket_addr = { 0 };
+    int socks_mtu;
+    uint16_t port;
+    PacketPassInterface *send_if;
+
     DebugObject_Access(&o->d_obj);
     ASSERT(o->num_connections <= o->max_connections)
     ASSERT(!find_connection_by_addr(o, local_addr))
     
-    char buffer[BADDR_MAX_PRINT_LEN];
     BAddr_Print(&local_addr, buffer);
     BLog(BLOG_DEBUG, "Creating new connection for %s", buffer);
     
     // allocate structure
-    struct SocksUdpClient_connection *con = (struct SocksUdpClient_connection *)malloc(sizeof(*con));
+    con = (struct SocksUdpClient_connection *)malloc(sizeof(*con));
     if (!con) {
         BLog(BLOG_ERROR, "malloc failed");
         goto fail0;
@@ -214,7 +229,7 @@ struct SocksUdpClient_connection *connection_init(SocksUdpClient *o, BAddr local
     
     con->dns_id = get_dns_id(&first_remote_addr, first_data, first_data_len);
     
-    BPendingGroup *pg = BReactor_PendingGroup(o->reactor);
+    pg = BReactor_PendingGroup(o->reactor);
     
     // init first job, to send the first packet asynchronously.  This has to happen asynchronously
     // because con->send_writer (a BufferWriter) cannot accept writes until after it is linked with
@@ -233,7 +248,6 @@ struct SocksUdpClient_connection *connection_init(SocksUdpClient *o, BAddr local
     }
     
     // Bind to 127.0.0.1:0 (or [::1]:0).  Port 0 signals the kernel to choose an open port.
-    BAddr socket_addr;
     socket_addr.type = local_addr.type;
     if (local_addr.type == BADDR_TYPE_IPV4) {
         socket_addr.ipv4.ip=0;
@@ -252,7 +266,6 @@ struct SocksUdpClient_connection *connection_init(SocksUdpClient *o, BAddr local
     
     // Bind succeeded, so the kernel has found an open port.
     // Update socket_addr to the actual port that was bound.
-    uint16_t port;
     if (!BDatagram_GetLocalPort(&con->socket, &port)) {
         BLog(BLOG_ERROR, "Failed to get bound port");
         goto fail2;
@@ -272,11 +285,11 @@ struct SocksUdpClient_connection *connection_init(SocksUdpClient *o, BAddr local
     
     // Ensure that the UDP handling pipeline can handle queries big enough to include
     // all data plus the SOCKS-UDP header.
-    int socks_mtu = compute_mtu(o->udp_mtu);
+    socks_mtu = compute_mtu(o->udp_mtu);
     
     // Send pipeline: send_writer -> send_buffer -> send_monitor -> send_if -> socket.
     BDatagram_SendAsync_Init(&con->socket, socks_mtu);
-    PacketPassInterface *send_if = BDatagram_SendAsync_GetIf(&con->socket);
+    send_if = BDatagram_SendAsync_GetIf(&con->socket);
     PacketPassInactivityMonitor_Init(&con->send_monitor, send_if, o->reactor, o->keepalive_time,
                                      (PacketPassInactivityMonitor_handler)send_monitor_handler, con);
     BufferWriter_Init(&con->send_writer, compute_mtu(o->udp_mtu), pg);
@@ -361,7 +374,13 @@ void connection_free (struct SocksUdpClient_connection *con)
 void connection_send (struct SocksUdpClient_connection *con, BAddr remote_addr,
                       const uint8_t *data, int data_len)
 {
+    int atyp;
+    size_t address_size;
+    size_t socks_data_len;
+    uint8_t *socks_data;
+    struct socks_udp_header *header;
     SocksUdpClient *o = con->client;
+    uint8_t *addr_data;
     DebugObject_Access(&o->d_obj);
     ASSERT(data_len >= 0)
     ASSERT(data_len <= o->udp_mtu)
@@ -376,8 +395,6 @@ void connection_send (struct SocksUdpClient_connection *con, BAddr remote_addr,
     }
     
     // Check if we're sending to an IPv4 or IPv6 destination.
-    int atyp;
-    size_t address_size;
     // write address
     switch (remote_addr.type) {
         case BADDR_TYPE_IPV4: {
@@ -395,22 +412,21 @@ void connection_send (struct SocksUdpClient_connection *con, BAddr remote_addr,
     }
     
     // Wrap the payload in a UDP SOCKS header.
-    size_t socks_data_len = sizeof(struct socks_udp_header) + address_size + data_len;
-    if (socks_data_len > compute_mtu(o->udp_mtu)) {
+    socks_data_len = sizeof(struct socks_udp_header) + address_size + data_len;
+    if (socks_data_len > (size_t) compute_mtu(o->udp_mtu)) {
         BLog(BLOG_ERROR, "Packet is too big: %d > %d", socks_data_len, compute_mtu(o->udp_mtu));
         return;
     }
-    uint8_t *socks_data;
     if (!BufferWriter_StartPacket(&con->send_writer, &socks_data)) {
         BLog(BLOG_ERROR, "Send buffer is full");
         return;
     }
     // Write header
-    struct socks_udp_header *header = (struct socks_udp_header *)socks_data;
+    header = (struct socks_udp_header *)socks_data;
     header->rsv = 0;
     header->frag = 0;
     header->atyp = atyp;
-    uint8_t *addr_data = socks_data + sizeof(struct socks_udp_header);
+    addr_data = socks_data + sizeof(struct socks_udp_header);
     switch (atyp) {
         case SOCKS_ATYP_IPV4: {
             struct socks_addr_ipv4 *addr_ipv4 = (struct socks_addr_ipv4 *)addr_data;
@@ -425,7 +441,7 @@ void connection_send (struct SocksUdpClient_connection *con, BAddr remote_addr,
     }
     // write packet to buffer
     memcpy(addr_data + address_size, data, data_len);
-    BufferWriter_EndPacket(&con->send_writer, socks_data_len);
+    BufferWriter_EndPacket(&con->send_writer, (int)socks_data_len);
 }
 
 void first_job_handler(struct SocksUdpClient_connection *con)
@@ -494,13 +510,14 @@ void SocksUdpClient_Free (SocksUdpClient *o)
 
 void SocksUdpClient_SubmitPacket (SocksUdpClient *o, BAddr local_addr, BAddr remote_addr, const uint8_t *data, int data_len)
 {
+    struct SocksUdpClient_connection *con;
     DebugObject_Access(&o->d_obj);
     ASSERT(local_addr.type == BADDR_TYPE_IPV4 || local_addr.type == BADDR_TYPE_IPV6)
     ASSERT(remote_addr.type == BADDR_TYPE_IPV4 || remote_addr.type == BADDR_TYPE_IPV6)
     ASSERT(data_len >= 0)
     
     // lookup connection
-    struct SocksUdpClient_connection *con = find_connection_by_addr(o, local_addr);
+    con = find_connection_by_addr(o, local_addr);
     if (!con) {
         if (o->num_connections == o->max_connections) {
             // Drop the packet.

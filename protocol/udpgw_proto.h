@@ -39,7 +39,6 @@
 #define UDPGW_CLIENT_FLAG_DNS (1 << 2)
 #define UDPGW_CLIENT_FLAG_IPV6 (1 << 3)
 
-#ifdef __ANDROID__
 B_START_PACKED
 struct socks_udp_header {
     uint16_t rsv;
@@ -47,7 +46,6 @@ struct socks_udp_header {
     uint8_t atyp;
 } B_PACKED;
 B_END_PACKED
-#endif
 
 B_START_PACKED
 struct udpgw_header {

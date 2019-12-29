@@ -91,15 +91,16 @@ static int CAvl_check_parent (CAvlRef p, CAvlRef c)
 
 static int CAvl_verify_recurser (CAvlArg arg, CAvlRef n)
 {
-    ASSERT_FORCE(CAvl_balance(n) >= -1)
-    ASSERT_FORCE(CAvl_balance(n) <= 1)
-    
     int height_left = 0;
     int height_right = 0;
+
 #if CAVL_PARAM_FEATURE_COUNTS
     CAvlCount count_left = 0;
     CAvlCount count_right = 0;
 #endif
+
+    ASSERT_FORCE(CAvl_balance(n) >= -1)
+    ASSERT_FORCE(CAvl_balance(n) <= 1)
     
     // check left subtree
     if (CAvl_link(n)[0] != CAvl_nulllink()) {
@@ -165,8 +166,10 @@ static void CAvl_update_count_from_children (CAvlArg arg, CAvlRef n)
 
 static void CAvl_rotate (CAvl *o, CAvlArg arg, CAvlRef r, uint8_t dir, CAvlRef r_parent)
 {
+    CAvlRef nr;
+
     ASSERT(CAvl_check_parent(r_parent, r))
-    CAvlRef nr = CAvlDeref(arg, CAvl_link(r)[!dir]);
+    nr = CAvlDeref(arg, CAvl_link(r)[!dir]);
     
     CAvl_link(r)[!dir] = CAvl_link(nr)[dir];
     if (CAvl_link(r)[!dir] != CAvl_nulllink()) {
@@ -247,6 +250,8 @@ static void CAvl_replace_subtree_fix_assoc (CAvl *o, CAvlArg arg, CAvlRef dest, 
 
 static void CAvl_swap_for_remove (CAvl *o, CAvlArg arg, CAvlRef node, CAvlRef enode, CAvlRef node_parent, CAvlRef enode_parent)
 {
+    int8_t b;
+
     ASSERT(CAvl_check_parent(node_parent, node))
     ASSERT(CAvl_check_parent(enode_parent, enode))
     
@@ -313,7 +318,7 @@ static void CAvl_swap_for_remove (CAvl *o, CAvlArg arg, CAvlRef node, CAvlRef en
     }
     
     // swap balance factors
-    int8_t b = CAvl_balance(node);
+    b = CAvl_balance(node);
     CAvl_balance(node) = CAvl_balance(enode);
     CAvl_balance(enode) = b;
     
@@ -329,6 +334,10 @@ static void CAvl_swap_for_remove (CAvl *o, CAvlArg arg, CAvlRef node, CAvlRef en
 
 static void CAvl_rebalance (CAvl *o, CAvlArg arg, CAvlRef node, uint8_t side, int8_t deltac)
 {
+    int8_t delta;
+    CAvlRef child;
+    CAvlRef gchild;
+
     ASSERT(side == 0 || side == 1)
     ASSERT(deltac >= -1 && deltac <= 1)
     ASSERT(CAvl_balance(node) >= -1 && CAvl_balance(node) <= 1)
@@ -339,14 +348,11 @@ static void CAvl_rebalance (CAvl *o, CAvlArg arg, CAvlRef node, uint8_t side, in
     }
     
     // calculate how much our height changed
-    int8_t delta = CAvl_MAX(deltac, CAvl_OPTNEG(CAvl_balance(node), side)) - CAvl_MAX(0, CAvl_OPTNEG(CAvl_balance(node), side));
+    delta = CAvl_MAX(deltac, CAvl_OPTNEG(CAvl_balance(node), side)) - CAvl_MAX(0, CAvl_OPTNEG(CAvl_balance(node), side));
     ASSERT(delta >= -1 && delta <= 1)
     
     // update our balance factor
     CAvl_balance(node) -= CAvl_OPTNEG(deltac, side);
-    
-    CAvlRef child;
-    CAvlRef gchild;
     
     // perform transformations if the balance factor is wrong
     if (CAvl_balance(node) == 2 || CAvl_balance(node) == -2) {
@@ -429,11 +435,11 @@ static int CAvlIsValidRef (CAvlRef node)
 
 static CAvlRef CAvlDeref (CAvlArg arg, CAvlLink link)
 {
+    CAvlRef n;
     if (link == CAvl_nulllink()) {
         return CAvl_nullref();
     }
     
-    CAvlRef n;
     n.ptr = CAVL_PARAM_FUN_DEREF(arg, link);
     n.link = link;
     
@@ -451,6 +457,9 @@ static void CAvl_Init (CAvl *o)
 
 static int CAvl_Insert (CAvl *o, CAvlArg arg, CAvlRef node, CAvlRef *out_ref)
 {
+    CAvlRef c;
+    int side;
+
     ASSERT(node.link != CAvl_nulllink())
 #if CAVL_PARAM_FEATURE_COUNTS
     ASSERT(CAvl_Count(o, arg) < CAVL_PARAM_VALUE_COUNT_MAX)
@@ -478,8 +487,7 @@ static int CAvl_Insert (CAvl *o, CAvlArg arg, CAvlRef node, CAvlRef *out_ref)
         return 1;
     }
     
-    CAvlRef c = CAvlDeref(arg, o->root);
-    int side;
+    c = CAvlDeref(arg, o->root);
     while (1) {
         int comp = CAvl_compare_entries(arg, node, c);
         
@@ -602,6 +610,8 @@ static void CAvl_InsertAt (CAvl *o, CAvlArg arg, CAvlRef node, CAvlCount index)
 
 static void CAvl_Remove (CAvl *o, CAvlArg arg, CAvlRef node)
 {
+    CAvlRef paren, child;
+
     ASSERT(node.link != CAvl_nulllink())
     ASSERT(o->root != CAvl_nulllink())
     
@@ -612,8 +622,8 @@ static void CAvl_Remove (CAvl *o, CAvlArg arg, CAvlRef node)
     
     ASSERT(CAvl_link(node)[0] == CAvl_nulllink() || CAvl_link(node)[1] == CAvl_nulllink())
     
-    CAvlRef paren = CAvlDeref(arg, CAvl_parent(node));
-    CAvlRef child = (CAvl_link(node)[0] != CAvl_nulllink() ? CAvlDeref(arg, CAvl_link(node)[0]) : CAvlDeref(arg, CAvl_link(node)[1]));
+    paren = CAvlDeref(arg, CAvl_parent(node));
+    child = (CAvl_link(node)[0] != CAvl_nulllink() ? CAvlDeref(arg, CAvl_link(node)[0]) : CAvlDeref(arg, CAvl_link(node)[1]));
     
     if (paren.link != CAvl_nulllink()) {
         int side = (node.link == CAvl_link(paren)[1]);

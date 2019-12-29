@@ -51,12 +51,16 @@ int bnetwork_initialized = 0;
 
 int BNetwork_GlobalInit (void)
 {
+#ifdef BADVPN_USE_WINAPI
+    WORD requested;
+    WSADATA wsadata;
+#endif
+
     ASSERT(!bnetwork_initialized)
     
 #ifdef BADVPN_USE_WINAPI
     
-    WORD requested = MAKEWORD(2, 2);
-    WSADATA wsadata;
+    requested = MAKEWORD(2, 2);
     if (WSAStartup(requested, &wsadata) != 0) {
         BLog(BLOG_ERROR, "WSAStartup failed");
         goto fail0;

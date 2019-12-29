@@ -275,6 +275,9 @@ tcp_input(struct pbuf *p, struct netif *inp)
   }
 
   if (pcb == NULL) {
+    struct tcp_pcb_listen *netif_pcb = NULL;
+    struct tcp_pcb *netif_pcb_prev = NULL;
+
     /* If it did not go to an active connection, we check the connections
        in the TIME-WAIT state. */
     for (pcb = tcp_tw_pcbs; pcb != NULL; pcb = pcb->next) {
@@ -303,8 +306,6 @@ tcp_input(struct pbuf *p, struct netif *inp)
     /* Finally, if we still did not get a match, we check all PCBs that
        are LISTENing for incoming connections. */
     prev = NULL;
-    struct tcp_pcb_listen *netif_pcb = NULL;
-    struct tcp_pcb *netif_pcb_prev = NULL;
     for (lpcb = tcp_listen_pcbs.listen_pcbs; lpcb != NULL; lpcb = lpcb->next) {
       /* check if PCB is bound to specific netif */
       if ((lpcb->netif_idx != NETIF_NO_INDEX) &&

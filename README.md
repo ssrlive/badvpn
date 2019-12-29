@@ -42,6 +42,15 @@ NCD only works on Linux. Tun2socks works on Linux and Windows. The P2P VPN works
 
 ## Installation
 
+To run `cmake` successfully, please install the following libraries first
+```
+sudo apt install libssl-dev libnspr4-dev libnss3-dev -y
+```
+or 
+```
+sudo yum install nss nss-devel nspr nspr-devel -y
+```
+
 The build system is based on CMake. On Linux, the following commands can be used to
 build:
 

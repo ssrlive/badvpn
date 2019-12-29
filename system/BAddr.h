@@ -317,10 +317,14 @@ int BIPAddr_IsInvalid (BIPAddr *addr)
 
 int BIPAddr_Resolve (BIPAddr *addr, char *str, int noresolve)
 {
-    int len = strlen(str);
+    int len = (int)strlen(str);
     
     char *addr_start;
     int addr_len;
+    char addr_str[BADDR_MAX_ADDR_LEN + 1];
+    struct addrinfo hints;
+    struct addrinfo *addrs;
+    int res;
     
     // determine address type
     if (len >= 1 && str[0] == '[' && str[len - 1] == ']') {
@@ -334,7 +338,6 @@ int BIPAddr_Resolve (BIPAddr *addr, char *str, int noresolve)
     }
     
     // copy
-    char addr_str[BADDR_MAX_ADDR_LEN + 1];
     if (addr_len > BADDR_MAX_ADDR_LEN) {
         return 0;
     }
@@ -342,7 +345,6 @@ int BIPAddr_Resolve (BIPAddr *addr, char *str, int noresolve)
     addr_str[addr_len] = '\0';
     
     // initialize hints
-    struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));
     switch (addr->type) {
         case BADDR_TYPE_IPV6:
@@ -357,8 +359,6 @@ int BIPAddr_Resolve (BIPAddr *addr, char *str, int noresolve)
     }
     
     // call getaddrinfo
-    struct addrinfo *addrs;
-    int res;
     if ((res = getaddrinfo(addr_str, NULL, &hints, &addrs)) != 0) {
         return 0;
     }
@@ -590,10 +590,10 @@ int BAddr_IsInvalid (BAddr *addr)
 
 void BAddr_Print (BAddr *addr, char *out)
 {
-    BAddr_Assert(addr);
-    
     BIPAddr ipaddr;
-    
+
+    BAddr_Assert(addr);
+        
     switch (addr->type) {
         case BADDR_TYPE_NONE:
             sprintf(out, "(none)");
@@ -624,21 +624,29 @@ void BAddr_Print (BAddr *addr, char *out)
 
 int BAddr_Parse2 (BAddr *addr, char *str, char *name, int name_len, int noresolve)
 {
-    int len = strlen(str);
-    if (len < 1 || len > 1000) {
-        return 0;
-    }
-    
     int addr_start;
     int addr_len;
     int port_start;
     int port_len;
+    char addr_str[128];
+    char port_str[6];
+    char *err;
+    long int conv_res;
+    uint16_t port;
+    struct addrinfo hints;
+    struct addrinfo *addrs;
+    int res;
+
+    int len = (int)strlen(str);
+    if (len < 1 || len > 1000) {
+        return 0;
+    }
     
     // leading '[' indicates an IPv6 address
     if (str[0] == '[') {
+        int i=1;
         addr->type = BADDR_TYPE_IPV6;
         // find ']'
-        int i=1;
         while (i < len && str[i] != ']') i++;
         if (i >= len) {
             return 0;
@@ -654,9 +662,9 @@ int BAddr_Parse2 (BAddr *addr, char *str, char *name, int name_len, int noresolv
     }
     // otherwise it's an IPv4 address
     else {
+        int i=0;
         addr->type = BADDR_TYPE_IPV4;
         // find ':'
-        int i=0;
         while (i < len && str[i] != ':') i++;
         if (i >= len) {
             return 0;
@@ -669,14 +677,12 @@ int BAddr_Parse2 (BAddr *addr, char *str, char *name, int name_len, int noresolv
     
     // copy address and port to zero-terminated buffers
     
-    char addr_str[128];
     if (addr_len >= sizeof(addr_str)) {
         return 0;
     }
     memcpy(addr_str, str + addr_start, addr_len);
     addr_str[addr_len] = '\0';
     
-    char port_str[6];
     if (port_len >= sizeof(port_str)) {
         return 0;
     }
@@ -684,19 +690,17 @@ int BAddr_Parse2 (BAddr *addr, char *str, char *name, int name_len, int noresolv
     port_str[port_len] = '\0';
     
     // parse port
-    char *err;
-    long int conv_res = strtol(port_str, &err, 10);
+    conv_res = strtol(port_str, &err, 10);
     if (port_str[0] == '\0' || *err != '\0') {
         return 0;
     }
     if (conv_res < 0 || conv_res > UINT16_MAX) {
         return 0;
     }
-    uint16_t port = conv_res;
+    port = (uint16_t)conv_res;
     port = hton16(port);
     
     // initialize hints
-    struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));
     switch (addr->type) {
         case BADDR_TYPE_IPV6:
@@ -711,8 +715,6 @@ int BAddr_Parse2 (BAddr *addr, char *str, char *name, int name_len, int noresolv
     }
     
     // call getaddrinfo
-    struct addrinfo *addrs;
-    int res;
     if ((res = getaddrinfo(addr_str, NULL, &hints, &addrs)) != 0) {
         return 0;
     }
@@ -732,7 +734,7 @@ int BAddr_Parse2 (BAddr *addr, char *str, char *name, int name_len, int noresolv
     freeaddrinfo(addrs);
     
     if (name) {
-        if (strlen(addr_str) >= name_len) {
+        if (strlen(addr_str) >= (size_t)name_len) {
             return 0;
         }
         strcpy(name, addr_str);
@@ -767,10 +769,11 @@ int BAddr_Compare (BAddr *addr1, BAddr *addr2)
 
 int BAddr_CompareOrder (BAddr *addr1, BAddr *addr2)
 {
+    int cmp;
     BAddr_Assert(addr1);
     BAddr_Assert(addr2);
     
-    int cmp = B_COMPARE(addr1->type, addr2->type);
+    cmp = B_COMPARE(addr1->type, addr2->type);
     if (cmp) {
         return cmp;
     }
@@ -780,23 +783,27 @@ int BAddr_CompareOrder (BAddr *addr1, BAddr *addr2)
             return 0;
         } break;
         case BADDR_TYPE_IPV4: {
+            uint16_t port1;
+            uint16_t port2;
             uint32_t ip1 = ntoh32(addr1->ipv4.ip);
             uint32_t ip2 = ntoh32(addr2->ipv4.ip);
             cmp = B_COMPARE(ip1, ip2);
             if (cmp) {
                 return cmp;
             }
-            uint16_t port1 = ntoh16(addr1->ipv4.port);
-            uint16_t port2 = ntoh16(addr2->ipv4.port);
+            port1 = ntoh16(addr1->ipv4.port);
+            port2 = ntoh16(addr2->ipv4.port);
             return B_COMPARE(port1, port2);
         } break;
         case BADDR_TYPE_IPV6: {
+            uint16_t port1;
+            uint16_t port2;
             cmp = memcmp(addr1->ipv6.ip, addr2->ipv6.ip, sizeof(addr1->ipv6.ip));
             if (cmp) {
                 return B_COMPARE(cmp, 0);
             }
-            uint16_t port1 = ntoh16(addr1->ipv6.port);
-            uint16_t port2 = ntoh16(addr2->ipv6.port);
+            port1 = ntoh16(addr1->ipv6.port);
+            port2 = ntoh16(addr2->ipv6.port);
             return B_COMPARE(port1, port2);
         } break;
         default: {

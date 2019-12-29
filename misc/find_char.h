@@ -41,9 +41,10 @@
  */
 static int b_find_char_bin (const char *str, size_t len, char c, size_t *out_pos)
 {
+    size_t i;
     ASSERT(str)
     
-    for (size_t i = 0; i < len; i++) {
+    for (i = 0; i < len; i++) {
         if (str[i] == c) {
             if (out_pos) {
                 *out_pos = i;

@@ -1,0 +1,420 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="tun2socks-src">
+      <UniqueIdentifier>{f67acb5d-4908-4bcd-87f5-699497204c1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="udpgw_client">
+      <UniqueIdentifier>{030a6fc7-edac-47b4-b689-2b64d8aa2d71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="socksclient">
+      <UniqueIdentifier>{67e1d14d-ebbb-4baa-bbaf-8afc59e6fbf3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lwip">
+      <UniqueIdentifier>{abf3fe8d-e933-46cf-af2a-fc87a5abab46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lwip\ipv6">
+      <UniqueIdentifier>{f50a514a-4a1b-4f99-92d2-dc819fb38a60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lwip\ipv4">
+      <UniqueIdentifier>{f863b09c-20fe-421c-b069-b96762b31c1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tuntap">
+      <UniqueIdentifier>{4f4d73fa-abbb-4145-a66f-a2b6e38c30e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="flow">
+      <UniqueIdentifier>{116b8f3f-82f0-4a6a-ad52-96b0b5d79d5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="system">
+      <UniqueIdentifier>{143130b1-b9db-4df5-955e-fe3980c9cace}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="base">
+      <UniqueIdentifier>{17a02108-adf1-48c2-ac93-8ca387b74069}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="flowextra">
+      <UniqueIdentifier>{c561cd9b-2998-411e-8be9-66bb9ccd820d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SocksUdpClient">
+      <UniqueIdentifier>{49f5bca6-4a5b-4083-a40b-f3b658f71da1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\tun2socks\tun2socks.c">
+      <Filter>tun2socks-src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tun2socks\SocksUdpGwClient.c">
+      <Filter>tun2socks-src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\udpgw_client\UdpGwClient.c">
+      <Filter>udpgw_client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\socksclient\BSocksClient.c">
+      <Filter>socksclient</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\mem.c">
+      <Filter>lwip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\memp.c">
+      <Filter>lwip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\netif.c">
+      <Filter>lwip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\pbuf.c">
+      <Filter>lwip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\stats.c">
+      <Filter>lwip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\sys.c">
+      <Filter>lwip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\tcp.c">
+      <Filter>lwip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\tcp_in.c">
+      <Filter>lwip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\tcp_out.c">
+      <Filter>lwip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\timeouts.c">
+      <Filter>lwip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\udp.c">
+      <Filter>lwip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\def.c">
+      <Filter>lwip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\inet_chksum.c">
+      <Filter>lwip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\init.c">
+      <Filter>lwip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\ip.c">
+      <Filter>lwip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\ipv6\ip6_addr.c">
+      <Filter>lwip\ipv6</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\ipv6\ip6_frag.c">
+      <Filter>lwip\ipv6</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\ipv6\nd6.c">
+      <Filter>lwip\ipv6</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\ipv6\icmp6.c">
+      <Filter>lwip\ipv6</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\ipv6\ip6.c">
+      <Filter>lwip\ipv6</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\ipv4\icmp.c">
+      <Filter>lwip\ipv4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\ipv4\ip4.c">
+      <Filter>lwip\ipv4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\ipv4\ip4_addr.c">
+      <Filter>lwip\ipv4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\src\core\ipv4\ip4_frag.c">
+      <Filter>lwip\ipv4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lwip\custom\sys.c">
+      <Filter>lwip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tuntap\BTap.c">
+      <Filter>tuntap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tuntap\tapwin32-funcs.c">
+      <Filter>tuntap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\RouteBuffer.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\SinglePacketBuffer.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\SinglePacketSender.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\SingleStreamReceiver.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\SingleStreamSender.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\StreamPacketSender.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\StreamPassConnector.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\StreamPassInterface.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\StreamRecvConnector.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\StreamRecvInterface.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\BufferWriter.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\LineBuffer.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\PacketBuffer.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\PacketCopier.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\PacketPassConnector.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\PacketPassFairQueue.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\PacketPassFifoQueue.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\PacketPassInterface.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\PacketPassNotifier.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\PacketPassPriorityQueue.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\PacketProtoDecoder.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\PacketProtoEncoder.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\PacketProtoFlow.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\PacketRecvBlocker.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\PacketRecvConnector.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\PacketRecvInterface.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\PacketRouter.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flow\PacketStreamSender.c">
+      <Filter>flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\system\BNetwork.c">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\system\BSignal.c">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\system\BConnection_common.c">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\system\BConnection_win.c">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\system\BDatagram_win.c">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\system\BTime.c">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\base\DebugObject.c">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\base\BLog.c">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\base\BPending.c">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\system\BReactor_badvpn.c">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flowextra\KeepaliveIO.c">
+      <Filter>flowextra</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flowextra\PacketPassInactivityMonitor.c">
+      <Filter>flowextra</Filter>
+    </ClCompile>
+    <ClCompile Include="..\socks_udp_client\SocksUdpClient.c">
+      <Filter>SocksUdpClient</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\tun2socks\SocksUdpGwClient.h">
+      <Filter>tun2socks-src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tun2socks\tun2socks.h">
+      <Filter>tun2socks-src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\udpgw_client\UdpGwClient.h">
+      <Filter>udpgw_client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\socksclient\BSocksClient.h">
+      <Filter>socksclient</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tuntap\tapwin32-funcs.h">
+      <Filter>tuntap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tuntap\wintap-common.h">
+      <Filter>tuntap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tuntap\BTap.h">
+      <Filter>tuntap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\PacketStreamSender.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\RouteBuffer.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\SinglePacketBuffer.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\SinglePacketSender.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\SingleStreamReceiver.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\SingleStreamSender.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\StreamPacketSender.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\StreamPassConnector.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\StreamPassInterface.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\StreamRecvConnector.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\StreamRecvInterface.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\BufferWriter.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\LineBuffer.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\PacketBuffer.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\PacketCopier.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\PacketPassConnector.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\PacketPassFairQueue.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\PacketPassFairQueue_tree.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\PacketPassFifoQueue.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\PacketPassInterface.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\PacketPassNotifier.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\PacketPassPriorityQueue.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\PacketPassPriorityQueue_tree.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\PacketProtoDecoder.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\PacketProtoEncoder.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\PacketProtoFlow.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\PacketRecvBlocker.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\PacketRecvConnector.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\PacketRecvInterface.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flow\PacketRouter.h">
+      <Filter>flow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\system\BNetwork.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\system\BSignal.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\system\BDatagram_win.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\system\BConnection_win.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\system\BTime.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\base\BPending.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\base\DebugObject.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\base\BLog.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\system\BReactor_badvpn.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flowextra\KeepaliveIO.h">
+      <Filter>flowextra</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flowextra\PacketPassInactivityMonitor.h">
+      <Filter>flowextra</Filter>
+    </ClInclude>
+    <ClInclude Include="..\socks_udp_client\SocksUdpClient.h">
+      <Filter>SocksUdpClient</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,273 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{E6DE7147-BBC6-437C-AFDF-303BED8E8DD2}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>tun2socks</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;BADVPN_USE_WINAPI;BADVPN_LITTLE_ENDIAN;BADVPN_THREAD_SAFE=0;BADVPN_BREACTOR_BADVPN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..;../lwip/src/include;../lwip/custom;./include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>ws2_32.lib;mswsock.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;BADVPN_USE_WINAPI;BADVPN_LITTLE_ENDIAN;BADVPN_THREAD_SAFE=0;BADVPN_BREACTOR_BADVPN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..;../lwip/src/include;../lwip/custom;./include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>ws2_32.lib;mswsock.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;BADVPN_USE_WINAPI;BADVPN_LITTLE_ENDIAN;BADVPN_THREAD_SAFE=0;BADVPN_BREACTOR_BADVPN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..;../lwip/src/include;../lwip/custom;./include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>ws2_32.lib;mswsock.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;BADVPN_USE_WINAPI;BADVPN_LITTLE_ENDIAN;BADVPN_THREAD_SAFE=0;BADVPN_BREACTOR_BADVPN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..;../lwip/src/include;../lwip/custom;./include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>ws2_32.lib;mswsock.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\base\BLog.c" />
+    <ClCompile Include="..\base\BPending.c" />
+    <ClCompile Include="..\base\DebugObject.c" />
+    <ClCompile Include="..\flowextra\KeepaliveIO.c" />
+    <ClCompile Include="..\flowextra\PacketPassInactivityMonitor.c" />
+    <ClCompile Include="..\flow\BufferWriter.c" />
+    <ClCompile Include="..\flow\LineBuffer.c" />
+    <ClCompile Include="..\flow\PacketBuffer.c" />
+    <ClCompile Include="..\flow\PacketCopier.c" />
+    <ClCompile Include="..\flow\PacketPassConnector.c" />
+    <ClCompile Include="..\flow\PacketPassFairQueue.c" />
+    <ClCompile Include="..\flow\PacketPassFifoQueue.c" />
+    <ClCompile Include="..\flow\PacketPassInterface.c" />
+    <ClCompile Include="..\flow\PacketPassNotifier.c" />
+    <ClCompile Include="..\flow\PacketPassPriorityQueue.c" />
+    <ClCompile Include="..\flow\PacketProtoDecoder.c" />
+    <ClCompile Include="..\flow\PacketProtoEncoder.c" />
+    <ClCompile Include="..\flow\PacketProtoFlow.c" />
+    <ClCompile Include="..\flow\PacketRecvBlocker.c" />
+    <ClCompile Include="..\flow\PacketRecvConnector.c" />
+    <ClCompile Include="..\flow\PacketRecvInterface.c" />
+    <ClCompile Include="..\flow\PacketRouter.c" />
+    <ClCompile Include="..\flow\PacketStreamSender.c" />
+    <ClCompile Include="..\flow\RouteBuffer.c" />
+    <ClCompile Include="..\flow\SinglePacketBuffer.c" />
+    <ClCompile Include="..\flow\SinglePacketSender.c" />
+    <ClCompile Include="..\flow\SingleStreamReceiver.c" />
+    <ClCompile Include="..\flow\SingleStreamSender.c" />
+    <ClCompile Include="..\flow\StreamPacketSender.c" />
+    <ClCompile Include="..\flow\StreamPassConnector.c" />
+    <ClCompile Include="..\flow\StreamPassInterface.c" />
+    <ClCompile Include="..\flow\StreamRecvConnector.c" />
+    <ClCompile Include="..\flow\StreamRecvInterface.c" />
+    <ClCompile Include="..\lwip\custom\sys.c" />
+    <ClCompile Include="..\lwip\src\core\def.c" />
+    <ClCompile Include="..\lwip\src\core\inet_chksum.c" />
+    <ClCompile Include="..\lwip\src\core\init.c" />
+    <ClCompile Include="..\lwip\src\core\ip.c" />
+    <ClCompile Include="..\lwip\src\core\ipv4\icmp.c" />
+    <ClCompile Include="..\lwip\src\core\ipv4\ip4.c" />
+    <ClCompile Include="..\lwip\src\core\ipv4\ip4_addr.c" />
+    <ClCompile Include="..\lwip\src\core\ipv4\ip4_frag.c" />
+    <ClCompile Include="..\lwip\src\core\ipv6\icmp6.c" />
+    <ClCompile Include="..\lwip\src\core\ipv6\ip6.c" />
+    <ClCompile Include="..\lwip\src\core\ipv6\ip6_addr.c" />
+    <ClCompile Include="..\lwip\src\core\ipv6\ip6_frag.c" />
+    <ClCompile Include="..\lwip\src\core\ipv6\nd6.c" />
+    <ClCompile Include="..\lwip\src\core\mem.c" />
+    <ClCompile Include="..\lwip\src\core\memp.c" />
+    <ClCompile Include="..\lwip\src\core\netif.c" />
+    <ClCompile Include="..\lwip\src\core\pbuf.c" />
+    <ClCompile Include="..\lwip\src\core\stats.c" />
+    <ClCompile Include="..\lwip\src\core\sys.c" />
+    <ClCompile Include="..\lwip\src\core\tcp.c" />
+    <ClCompile Include="..\lwip\src\core\tcp_in.c" />
+    <ClCompile Include="..\lwip\src\core\tcp_out.c" />
+    <ClCompile Include="..\lwip\src\core\timeouts.c" />
+    <ClCompile Include="..\lwip\src\core\udp.c" />
+    <ClCompile Include="..\socksclient\BSocksClient.c" />
+    <ClCompile Include="..\socks_udp_client\SocksUdpClient.c" />
+    <ClCompile Include="..\system\BConnection_common.c" />
+    <ClCompile Include="..\system\BConnection_win.c" />
+    <ClCompile Include="..\system\BDatagram_win.c" />
+    <ClCompile Include="..\system\BNetwork.c" />
+    <ClCompile Include="..\system\BReactor_badvpn.c" />
+    <ClCompile Include="..\system\BSignal.c" />
+    <ClCompile Include="..\system\BTime.c" />
+    <ClCompile Include="..\tun2socks\SocksUdpGwClient.c" />
+    <ClCompile Include="..\tun2socks\tun2socks.c" />
+    <ClCompile Include="..\tuntap\BTap.c" />
+    <ClCompile Include="..\tuntap\tapwin32-funcs.c" />
+    <ClCompile Include="..\udpgw_client\UdpGwClient.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\base\BLog.h" />
+    <ClInclude Include="..\base\BPending.h" />
+    <ClInclude Include="..\base\DebugObject.h" />
+    <ClInclude Include="..\flowextra\KeepaliveIO.h" />
+    <ClInclude Include="..\flowextra\PacketPassInactivityMonitor.h" />
+    <ClInclude Include="..\flow\BufferWriter.h" />
+    <ClInclude Include="..\flow\LineBuffer.h" />
+    <ClInclude Include="..\flow\PacketBuffer.h" />
+    <ClInclude Include="..\flow\PacketCopier.h" />
+    <ClInclude Include="..\flow\PacketPassConnector.h" />
+    <ClInclude Include="..\flow\PacketPassFairQueue.h" />
+    <ClInclude Include="..\flow\PacketPassFairQueue_tree.h" />
+    <ClInclude Include="..\flow\PacketPassFifoQueue.h" />
+    <ClInclude Include="..\flow\PacketPassInterface.h" />
+    <ClInclude Include="..\flow\PacketPassNotifier.h" />
+    <ClInclude Include="..\flow\PacketPassPriorityQueue.h" />
+    <ClInclude Include="..\flow\PacketPassPriorityQueue_tree.h" />
+    <ClInclude Include="..\flow\PacketProtoDecoder.h" />
+    <ClInclude Include="..\flow\PacketProtoEncoder.h" />
+    <ClInclude Include="..\flow\PacketProtoFlow.h" />
+    <ClInclude Include="..\flow\PacketRecvBlocker.h" />
+    <ClInclude Include="..\flow\PacketRecvConnector.h" />
+    <ClInclude Include="..\flow\PacketRecvInterface.h" />
+    <ClInclude Include="..\flow\PacketRouter.h" />
+    <ClInclude Include="..\flow\PacketStreamSender.h" />
+    <ClInclude Include="..\flow\RouteBuffer.h" />
+    <ClInclude Include="..\flow\SinglePacketBuffer.h" />
+    <ClInclude Include="..\flow\SinglePacketSender.h" />
+    <ClInclude Include="..\flow\SingleStreamReceiver.h" />
+    <ClInclude Include="..\flow\SingleStreamSender.h" />
+    <ClInclude Include="..\flow\StreamPacketSender.h" />
+    <ClInclude Include="..\flow\StreamPassConnector.h" />
+    <ClInclude Include="..\flow\StreamPassInterface.h" />
+    <ClInclude Include="..\flow\StreamRecvConnector.h" />
+    <ClInclude Include="..\flow\StreamRecvInterface.h" />
+    <ClInclude Include="..\socksclient\BSocksClient.h" />
+    <ClInclude Include="..\socks_udp_client\SocksUdpClient.h" />
+    <ClInclude Include="..\system\BConnection_win.h" />
+    <ClInclude Include="..\system\BDatagram_win.h" />
+    <ClInclude Include="..\system\BNetwork.h" />
+    <ClInclude Include="..\system\BReactor_badvpn.h" />
+    <ClInclude Include="..\system\BSignal.h" />
+    <ClInclude Include="..\system\BTime.h" />
+    <ClInclude Include="..\tun2socks\SocksUdpGwClient.h" />
+    <ClInclude Include="..\tun2socks\tun2socks.h" />
+    <ClInclude Include="..\tuntap\BTap.h" />
+    <ClInclude Include="..\tuntap\tapwin32-funcs.h" />
+    <ClInclude Include="..\tuntap\wintap-common.h" />
+    <ClInclude Include="..\udpgw_client\UdpGwClient.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

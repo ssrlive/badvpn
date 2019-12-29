@@ -51,14 +51,18 @@ static int compare_flows (PacketPassFairQueueFlow *f1, PacketPassFairQueueFlow *
 
 static uint64_t get_current_time (PacketPassFairQueue *m)
 {
+    uint64_t time;
+    int have;
+    PacketPassFairQueueFlow *first_flow;
+
     if (m->sending_flow) {
         return m->sending_flow->time;
     }
     
-    uint64_t time = 0; // to remove warning
-    int have = 0;
+    time = 0; // to remove warning
+    have = 0;
     
-    PacketPassFairQueueFlow *first_flow = PacketPassFairQueue__Tree_GetFirst(&m->queued_tree, 0);
+    first_flow = PacketPassFairQueue__Tree_GetFirst(&m->queued_tree, 0);
     if (first_flow) {
         ASSERT(first_flow->is_queued)
         
@@ -86,6 +90,7 @@ static void increment_sent_flow (PacketPassFairQueueFlow *flow, uint64_t amount)
     
     // does time overflow?
     if (amount > FAIRQUEUE_MAX_TIME - flow->time) {
+        LinkedList1Node *list_node;
         // get time to subtract
         uint64_t subtract;
         PacketPassFairQueueFlow *first_flow = PacketPassFairQueue__Tree_GetFirst(&m->queued_tree, 0);
@@ -97,7 +102,7 @@ static void increment_sent_flow (PacketPassFairQueueFlow *flow, uint64_t amount)
         }
         
         // subtract time from all flows
-        for (LinkedList1Node *list_node = LinkedList1_GetFirst(&m->flows_list); list_node; list_node = LinkedList1Node_Next(list_node)) {
+        for (list_node = LinkedList1_GetFirst(&m->flows_list); list_node; list_node = LinkedList1Node_Next(list_node)) {
             PacketPassFairQueueFlow *someflow = UPPER_OBJECT(list_node, PacketPassFairQueueFlow, list_node);
             
             // don't subtract more time than there is, except for the just finished flow,
@@ -117,13 +122,15 @@ static void increment_sent_flow (PacketPassFairQueueFlow *flow, uint64_t amount)
 
 static void schedule (PacketPassFairQueue *m)
 {
+    PacketPassFairQueueFlow *qflow;
+
     ASSERT(!m->sending_flow)
     ASSERT(!m->previous_flow)
     ASSERT(!m->freeing)
     ASSERT(!PacketPassFairQueue__Tree_IsEmpty(&m->queued_tree))
     
     // get first queued flow
-    PacketPassFairQueueFlow *qflow = PacketPassFairQueue__Tree_GetFirst(&m->queued_tree, 0);
+    qflow = PacketPassFairQueue__Tree_GetFirst(&m->queued_tree, 0);
     ASSERT(qflow->is_queued)
     
     // remove flow from queue
@@ -152,6 +159,7 @@ static void schedule_job_handler (PacketPassFairQueue *m)
 
 static void input_handler_send (PacketPassFairQueueFlow *flow, uint8_t *data, int data_len)
 {
+    int res;
     PacketPassFairQueue *m = flow->m;
     
     ASSERT(flow != m->sending_flow)
@@ -170,7 +178,7 @@ static void input_handler_send (PacketPassFairQueueFlow *flow, uint8_t *data, in
     // queue flow
     flow->queued.data = data;
     flow->queued.data_len = data_len;
-    int res = PacketPassFairQueue__Tree_Insert(&m->queued_tree, 0, flow, NULL);
+    res = PacketPassFairQueue__Tree_Insert(&m->queued_tree, 0, flow, NULL);
     ASSERT_EXECUTE(res)
     flow->is_queued = 1;
     
@@ -181,13 +189,14 @@ static void input_handler_send (PacketPassFairQueueFlow *flow, uint8_t *data, in
 
 static void output_handler_done (PacketPassFairQueue *m)
 {
+    PacketPassFairQueueFlow *flow;
     ASSERT(m->sending_flow)
     ASSERT(!m->previous_flow)
     ASSERT(!BPending_IsSet(&m->schedule_job))
     ASSERT(!m->freeing)
     ASSERT(!m->sending_flow->is_queued)
     
-    PacketPassFairQueueFlow *flow = m->sending_flow;
+    flow = m->sending_flow;
     
     // sending finished
     m->sending_flow = NULL;

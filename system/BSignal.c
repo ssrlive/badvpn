@@ -162,7 +162,9 @@ fail1:
     BReactorIOCPOverlapped_Free(&bsignal_global.olap);
     #endif
     
+#ifndef BADVPN_USE_WINAPI
 fail0:
+#endif
     return 0;
 }
 

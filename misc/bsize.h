@@ -90,7 +90,7 @@ int bsize_toint (bsize_t s, int *out)
     }
     
     if (out) {
-        *out = s.value;
+        *out = (int)s.value;
     }
     
     return 1;

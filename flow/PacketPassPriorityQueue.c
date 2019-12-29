@@ -50,12 +50,14 @@ static int compare_flows (PacketPassPriorityQueueFlow *f1, PacketPassPriorityQue
 
 static void schedule (PacketPassPriorityQueue *m)
 {
+    PacketPassPriorityQueueFlow *qflow;
+
     ASSERT(!m->sending_flow)
     ASSERT(!m->freeing)
     ASSERT(!PacketPassPriorityQueue__Tree_IsEmpty(&m->queued_tree))
     
     // get first queued flow
-    PacketPassPriorityQueueFlow *qflow = PacketPassPriorityQueue__Tree_GetFirst(&m->queued_tree, 0);
+    qflow = PacketPassPriorityQueue__Tree_GetFirst(&m->queued_tree, 0);
     ASSERT(qflow->is_queued)
     
     // remove flow from queue
@@ -81,6 +83,7 @@ static void schedule_job_handler (PacketPassPriorityQueue *m)
 static void input_handler_send (PacketPassPriorityQueueFlow *flow, uint8_t *data, int data_len)
 {
     PacketPassPriorityQueue *m = flow->m;
+    int res;
     
     ASSERT(flow != m->sending_flow)
     ASSERT(!flow->is_queued)
@@ -90,7 +93,7 @@ static void input_handler_send (PacketPassPriorityQueueFlow *flow, uint8_t *data
     // queue flow
     flow->queued.data = data;
     flow->queued.data_len = data_len;
-    int res = PacketPassPriorityQueue__Tree_Insert(&m->queued_tree, 0, flow, NULL);
+    res = PacketPassPriorityQueue__Tree_Insert(&m->queued_tree, 0, flow, NULL);
     ASSERT_EXECUTE(res)
     flow->is_queued = 1;
     
@@ -101,12 +104,14 @@ static void input_handler_send (PacketPassPriorityQueueFlow *flow, uint8_t *data
 
 static void output_handler_done (PacketPassPriorityQueue *m)
 {
+    PacketPassPriorityQueueFlow *flow;
+
     ASSERT(m->sending_flow)
     ASSERT(!BPending_IsSet(&m->schedule_job))
     ASSERT(!m->freeing)
     ASSERT(!m->sending_flow->is_queued)
     
-    PacketPassPriorityQueueFlow *flow = m->sending_flow;
+    flow = m->sending_flow;
     
     // sending finished
     m->sending_flow = NULL;

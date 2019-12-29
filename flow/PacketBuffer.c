@@ -39,12 +39,14 @@ static void output_handler_done (PacketBuffer *buf);
 
 void input_handler_done (PacketBuffer *buf, int in_len)
 {
+    int was_empty;
+
     ASSERT(in_len >= 0)
     ASSERT(in_len <= buf->input_mtu)
     DebugObject_Access(&buf->d_obj);
     
     // remember if buffer is empty
-    int was_empty = (buf->buf.output_avail < 0);
+    was_empty = (buf->buf.output_avail < 0);
     
     // submit packet to buffer
     ChunkBuffer2_SubmitPacket(&buf->buf, in_len);
@@ -62,10 +64,11 @@ void input_handler_done (PacketBuffer *buf, int in_len)
 
 void output_handler_done (PacketBuffer *buf)
 {
+    int was_full;
     DebugObject_Access(&buf->d_obj);
     
     // remember if buffer is full
-    int was_full = (buf->buf.input_avail < buf->input_mtu);
+    was_full = (buf->buf.input_avail < buf->input_mtu);
     
     // remove packet from buffer
     ChunkBuffer2_ConsumePacket(&buf->buf);
@@ -83,6 +86,8 @@ void output_handler_done (PacketBuffer *buf)
 
 int PacketBuffer_Init (PacketBuffer *buf, PacketRecvInterface *input, PacketPassInterface *output, int num_packets, BPendingGroup *pg)
 {
+    int num_blocks;
+
     ASSERT(PacketPassInterface_GetMTU(output) >= PacketRecvInterface_GetMTU(input))
     ASSERT(num_packets > 0)
     
@@ -100,7 +105,7 @@ int PacketBuffer_Init (PacketBuffer *buf, PacketRecvInterface *input, PacketPass
     PacketPassInterface_Sender_Init(buf->output, (PacketPassInterface_handler_done)output_handler_done, buf);
     
     // allocate buffer
-    int num_blocks = ChunkBuffer2_calc_blocks(buf->input_mtu, num_packets);
+    num_blocks = ChunkBuffer2_calc_blocks(buf->input_mtu, num_packets);
     if (num_blocks < 0) {
         goto fail0;
     }

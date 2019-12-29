@@ -97,6 +97,12 @@ static void decoder_handler_error (UdpGwClient *o)
 
 static void recv_interface_handler_send (UdpGwClient *o, uint8_t *data, int data_len)
 {
+    struct udpgw_header header;
+    uint8_t flags;
+    uint16_t conid;
+    BAddr remote_addr;
+    struct UdpGwClient_connection *con;
+
     DebugObject_Access(&o->d_obj);
     ASSERT(o->have_server)
     ASSERT(data_len >= 0)
@@ -110,31 +116,29 @@ static void recv_interface_handler_send (UdpGwClient *o, uint8_t *data, int data
         BLog(BLOG_ERROR, "missing header");
         return;
     }
-    struct udpgw_header header;
     memcpy(&header, data, sizeof(header));
     data += sizeof(header);
     data_len -= sizeof(header);
-    uint8_t flags = ltoh8(header.flags);
-    uint16_t conid = ltoh16(header.conid);
+    flags = ltoh8(header.flags);
+    conid = ltoh16(header.conid);
     
     // parse address
-    BAddr remote_addr;
     if ((flags & UDPGW_CLIENT_FLAG_IPV6)) {
+        struct udpgw_addr_ipv6 addr_ipv6;
         if (data_len < sizeof(struct udpgw_addr_ipv6)) {
             BLog(BLOG_ERROR, "missing ipv6 address");
             return;
         }
-        struct udpgw_addr_ipv6 addr_ipv6;
         memcpy(&addr_ipv6, data, sizeof(addr_ipv6));
         data += sizeof(addr_ipv6);
         data_len -= sizeof(addr_ipv6);
         BAddr_InitIPv6(&remote_addr, addr_ipv6.addr_ip, addr_ipv6.addr_port);
     } else {
+        struct udpgw_addr_ipv4 addr_ipv4;
         if (data_len < sizeof(struct udpgw_addr_ipv4)) {
             BLog(BLOG_ERROR, "missing ipv4 address");
             return;
         }
-        struct udpgw_addr_ipv4 addr_ipv4;
         memcpy(&addr_ipv4, data, sizeof(addr_ipv4));
         data += sizeof(addr_ipv4);
         data_len -= sizeof(addr_ipv4);
@@ -148,7 +152,7 @@ static void recv_interface_handler_send (UdpGwClient *o, uint8_t *data, int data
     }
     
     // find connection
-    struct UdpGwClient_connection *con = find_connection_by_conid(o, conid);
+    con = find_connection_by_conid(o, conid);
     if (!con) {
         BLog(BLOG_ERROR, "unknown conid");
         return;
@@ -234,13 +238,15 @@ static uint16_t find_unused_conid (UdpGwClient *o)
 
 static void connection_init (UdpGwClient *o, struct UdpGwClient_conaddr conaddr, uint8_t flags, const uint8_t *data, int data_len)
 {
+    struct UdpGwClient_connection *con;
+
     ASSERT(o->num_connections < o->max_connections)
     ASSERT(!find_connection_by_conaddr(o, conaddr))
     ASSERT(data_len >= 0)
     ASSERT(data_len <= o->udp_mtu)
     
     // allocate structure
-    struct UdpGwClient_connection *con = (struct UdpGwClient_connection *)malloc(sizeof(*con));
+    con = (struct UdpGwClient_connection *)malloc(sizeof(*con));
     if (!con) {
         BLog(BLOG_ERROR, "malloc failed");
         goto fail0;
@@ -329,25 +335,27 @@ static void connection_first_job_handler (struct UdpGwClient_connection *con)
 
 static void connection_send (struct UdpGwClient_connection *con, uint8_t flags, const uint8_t *data, int data_len)
 {
+    uint8_t *out;
+    int out_pos;
+    struct udpgw_header header;
+
     UdpGwClient *o = con->client;
     B_USE(o)
     ASSERT(data_len >= 0)
     ASSERT(data_len <= o->udp_mtu)
     
     // get buffer location
-    uint8_t *out;
     if (!BufferWriter_StartPacket(con->send_if, &out)) {
         BLog(BLOG_ERROR, "out of buffer");
         return;
     }
-    int out_pos = 0;
+    out_pos = 0;
     
     if (con->conaddr.remote_addr.type == BADDR_TYPE_IPV6) {
         flags |= UDPGW_CLIENT_FLAG_IPV6;
     }
     
     // write header
-    struct udpgw_header header;
     header.flags = ltoh8(flags);
     header.conid = ltoh16(con->conid);
     memcpy(out + out_pos, &header, sizeof(header));
@@ -381,11 +389,12 @@ static void connection_send (struct UdpGwClient_connection *con, uint8_t flags, 
 
 static struct UdpGwClient_connection * reuse_connection (UdpGwClient *o, struct UdpGwClient_conaddr conaddr)
 {
+    struct UdpGwClient_connection *con;
     ASSERT(!find_connection_by_conaddr(o, conaddr))
     ASSERT(o->num_connections > 0)
     
     // get least recently used connection
-    struct UdpGwClient_connection *con = UPPER_OBJECT(LinkedList1_GetFirst(&o->connections_list), struct UdpGwClient_connection, connections_list_node);
+    con = UPPER_OBJECT(LinkedList1_GetFirst(&o->connections_list), struct UdpGwClient_connection, connections_list_node);
     
     // remove from connections tree by conaddr
     BAVL_Remove(&o->connections_tree_by_conaddr, &con->connections_tree_by_conaddr_node);
@@ -514,6 +523,10 @@ void UdpGwClient_Free (UdpGwClient *o)
 
 void UdpGwClient_SubmitPacket (UdpGwClient *o, BAddr local_addr, BAddr remote_addr, int is_dns, const uint8_t *data, int data_len)
 {
+    struct UdpGwClient_conaddr conaddr;
+    struct UdpGwClient_connection *con;
+    uint8_t flags;
+
     DebugObject_Access(&o->d_obj);
     ASSERT(local_addr.type == BADDR_TYPE_IPV4 || local_addr.type == BADDR_TYPE_IPV6)
     ASSERT(remote_addr.type == BADDR_TYPE_IPV4 || remote_addr.type == BADDR_TYPE_IPV6)
@@ -521,14 +534,13 @@ void UdpGwClient_SubmitPacket (UdpGwClient *o, BAddr local_addr, BAddr remote_ad
     ASSERT(data_len <= o->udp_mtu)
     
     // build conaddr
-    struct UdpGwClient_conaddr conaddr;
     conaddr.local_addr = local_addr;
     conaddr.remote_addr = remote_addr;
     
     // lookup connection
-    struct UdpGwClient_connection *con = find_connection_by_conaddr(o, conaddr);
+    con = find_connection_by_conaddr(o, conaddr);
     
-    uint8_t flags = 0;
+    flags = 0;
 
     if (is_dns) {
         // route to remote DNS server instead of provided address

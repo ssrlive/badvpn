@@ -71,16 +71,17 @@ B_END_PACKED
 
 static uint16_t ipv4_checksum (const struct ipv4_header *header, const char *extra, uint16_t extra_len)
 {
+    uint32_t t = 0;
+    uint16_t i;
+
     ASSERT(extra_len % 2 == 0)
     ASSERT(extra_len == 0 || extra)
     
-    uint32_t t = 0;
-    
-    for (uint16_t i = 0; i < sizeof(*header) / 2; i++) {
+    for (i = 0; i < sizeof(*header) / 2; i++) {
         t += badvpn_read_be16((const char *)header + 2 * i);
     }
     
-    for (uint16_t i = 0; i < extra_len / 2; i++) {
+    for (i = 0; i < extra_len / 2; i++) {
         t += badvpn_read_be16((const char *)extra + 2 * i);
     }
     
@@ -93,6 +94,11 @@ static uint16_t ipv4_checksum (const struct ipv4_header *header, const char *ext
 
 static int ipv4_check (uint8_t *data, int data_len, struct ipv4_header *out_header, uint8_t **out_payload, int *out_payload_len)
 {
+    uint16_t header_len;
+    uint16_t total_length;
+    uint16_t checksum_in_packet;
+    uint16_t checksum_computed;
+
     ASSERT(data_len >= 0)
     ASSERT(out_header)
     ASSERT(out_payload)
@@ -110,7 +116,7 @@ static int ipv4_check (uint8_t *data, int data_len, struct ipv4_header *out_head
     }
     
     // check options
-    uint16_t header_len = IPV4_GET_IHL(*out_header) * 4;
+    header_len = IPV4_GET_IHL(*out_header) * 4;
     if (header_len < sizeof(struct ipv4_header)) {
         return 0;
     }
@@ -119,7 +125,7 @@ static int ipv4_check (uint8_t *data, int data_len, struct ipv4_header *out_head
     }
     
     // check total length
-    uint16_t total_length = ntoh16(out_header->total_length);
+    total_length = ntoh16(out_header->total_length);
     if (total_length < header_len) {
         return 0;
     }
@@ -128,9 +134,9 @@ static int ipv4_check (uint8_t *data, int data_len, struct ipv4_header *out_head
     }
     
     // check checksum
-    uint16_t checksum_in_packet = out_header->checksum;
+    checksum_in_packet = out_header->checksum;
     out_header->checksum = hton16(0);
-    uint16_t checksum_computed = ipv4_checksum(out_header, (char *)data + sizeof(*out_header), header_len - sizeof(*out_header));
+    checksum_computed = ipv4_checksum(out_header, (char *)data + sizeof(*out_header), header_len - sizeof(*out_header));
     out_header->checksum = checksum_in_packet;
     if (checksum_in_packet != checksum_computed) {
         return 0;

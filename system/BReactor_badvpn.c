@@ -109,12 +109,14 @@ static int move_expired_timers (BReactor *bsys, btime_t now)
 static void move_first_timers (BReactor *bsys)
 {
     BReactor__TimersTreeRef ref;
+    btime_t first_time;
+    BSmallTimer *timer;
     
     // get the time of the first timer
     BSmallTimer *first_timer = (ref = BReactor__TimersTree_GetFirst(&bsys->timers_tree, 0)).link;
     ASSERT(first_timer)
     ASSERT(first_timer->state == TIMER_STATE_RUNNING)
-    btime_t first_time = first_timer->absTime;
+    first_time = first_timer->absTime;
     
     // remove from running timers tree
     BReactor__TimersTree_Remove(&bsys->timers_tree, 0, ref);
@@ -126,7 +128,6 @@ static void move_first_timers (BReactor *bsys)
     first_timer->state = TIMER_STATE_EXPIRED;
     
     // also move other timers with the same timeout
-    BSmallTimer *timer;
     while (timer = (ref = BReactor__TimersTree_GetFirst(&bsys->timers_tree, 0)).link) {
         ASSERT(timer->state == TIMER_STATE_RUNNING)
         ASSERT(timer->absTime >= first_time)
@@ -272,6 +273,12 @@ static void set_poll_fd_pointers (BReactor *bsys)
 
 static void wait_for_events (BReactor *bsys)
 {
+    int have_timeout;
+    btime_t timeout_abs;
+    btime_t now;
+    BSmallTimer *first_timer;
+    LinkedList1Node *list_node;
+
     // must have processed all pending events
     ASSERT(!BPendingGroup_HasJobs(&bsys->pending_jobs))
     ASSERT(LinkedList1_IsEmpty(&bsys->timers_expired_list))
@@ -307,12 +314,12 @@ static void wait_for_events (BReactor *bsys)
     #endif
     
     // timeout vars
-    int have_timeout = 0;
-    btime_t timeout_abs;
-    btime_t now = 0; // to remove warning
+    have_timeout = 0;
+    //btime_t timeout_abs;
+    now = 0; // to remove warning
     
     // compute timeout
-    BSmallTimer *first_timer = BReactor__TimersTree_GetFirst(&bsys->timers_tree, 0).link;
+    first_timer = BReactor__TimersTree_GetFirst(&bsys->timers_tree, 0).link;
     if (first_timer) {
         ASSERT(first_timer->state == TIMER_STATE_RUNNING)
         
@@ -332,6 +339,12 @@ static void wait_for_events (BReactor *bsys)
     
     // wait until the timeout is reached or the file descriptor / handle in ready
     while (1) {
+#ifdef BADVPN_USE_WINAPI
+        DWORD bytes;
+        ULONG_PTR key;
+        BReactorIOCPOverlapped *olap;
+        BOOL res;
+#endif
         // compute timeout
         btime_t timeout_rel = 0; // to remove warning
         btime_t timeout_rel_trunc = 0; // to remove warning
@@ -350,10 +363,10 @@ static void wait_for_events (BReactor *bsys)
             }
         }
         
-        DWORD bytes = 0;
-        ULONG_PTR key;
-        BReactorIOCPOverlapped *olap = NULL;
-        BOOL res = GetQueuedCompletionStatus(bsys->iocp_handle, &bytes, &key, (OVERLAPPED **)&olap, (have_timeout ? timeout_rel_trunc : INFINITE));
+        bytes = 0;
+        key = 0;
+        olap = NULL;
+        res = GetQueuedCompletionStatus(bsys->iocp_handle, &bytes, &key, (OVERLAPPED **)&olap, (DWORD)(have_timeout ? timeout_rel_trunc : INFINITE));
         
         ASSERT_FORCE(olap || have_timeout)
         
@@ -526,7 +539,9 @@ static void wait_for_events (BReactor *bsys)
         
         #endif
         
+#ifndef BADVPN_USE_WINAPI
     try_again:
+#endif
         if (have_timeout) {
             // get current time
             now = btime_gettime();
@@ -540,7 +555,6 @@ static void wait_for_events (BReactor *bsys)
     }
     
     // reset limit objects
-    LinkedList1Node *list_node;
     while (list_node = LinkedList1_GetFirst(&bsys->active_limits_list)) {
         BReactorLimit *limit = UPPER_OBJECT(list_node, BReactorLimit, active_limits_list_node);
         ASSERT(limit->count > 0)
@@ -769,6 +783,8 @@ int BReactor_Exec (BReactor *bsys)
     BLog(BLOG_DEBUG, "Entering event loop");
     
     while (!bsys->exiting) {
+        LinkedList1Node *list_node;
+
         // dispatch job
         if (BPendingGroup_HasJobs(&bsys->pending_jobs)) {
             BPendingGroup_ExecuteJob(&bsys->pending_jobs);
@@ -776,7 +792,7 @@ int BReactor_Exec (BReactor *bsys)
         }
         
         // dispatch timer
-        LinkedList1Node *list_node = LinkedList1_GetFirst(&bsys->timers_expired_list);
+        list_node = LinkedList1_GetFirst(&bsys->timers_expired_list);
         if (list_node) {
             BSmallTimer *timer = UPPER_OBJECT(list_node, BSmallTimer, u.list_node);
             ASSERT(timer->state == TIMER_STATE_EXPIRED)
@@ -801,6 +817,7 @@ int BReactor_Exec (BReactor *bsys)
         #ifdef BADVPN_USE_WINAPI
         
         if (!LinkedList1_IsEmpty(&bsys->iocp_ready_list)) {
+            int event;
             BReactorIOCPOverlapped *olap = UPPER_OBJECT(LinkedList1_GetFirst(&bsys->iocp_ready_list), BReactorIOCPOverlapped, ready_list_node);
             ASSERT(olap->is_ready)
             ASSERT(olap->handler)
@@ -811,7 +828,7 @@ int BReactor_Exec (BReactor *bsys)
             // set not ready
             olap->is_ready = 0;
             
-            int event = (olap->ready_succeeded ? BREACTOR_IOCP_EVENT_SUCCEEDED : BREACTOR_IOCP_EVENT_FAILED);
+            event = (olap->ready_succeeded ? BREACTOR_IOCP_EVENT_SUCCEEDED : BREACTOR_IOCP_EVENT_FAILED);
             
             // call handler
             olap->handler(olap->user, event, olap->ready_bytes);
@@ -1014,11 +1031,12 @@ void BReactor_SetSmallTimer (BReactor *bsys, BSmallTimer *bt, int mode, btime_t 
     
     // set running
     bt->state = TIMER_STATE_RUNNING;
-    
+    {
     // insert to running timers tree
     BReactor__TimersTreeRef ref = {bt, bt};
     int res = BReactor__TimersTree_Insert(&bsys->timers_tree, 0, ref, NULL);
     ASSERT_EXECUTE(res)
+    }
 }
 
 void BReactor_RemoveSmallTimer (BReactor *bsys, BSmallTimer *bt)
@@ -1059,7 +1077,7 @@ void BReactor_SetTimerAbsolute (BReactor *bsys, BTimer *bt, btime_t time)
 
 void BReactor_RemoveTimer (BReactor *bsys, BTimer *bt)
 {
-    return BReactor_RemoveSmallTimer(bsys, &bt->base);
+    BReactor_RemoveSmallTimer(bsys, &bt->base);
 }
 
 BPendingGroup * BReactor_PendingGroup (BReactor *bsys)

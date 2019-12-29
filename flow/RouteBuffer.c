@@ -37,12 +37,14 @@
 
 static struct RouteBuffer_packet * alloc_packet (int mtu)
 {
+    struct RouteBuffer_packet *p;
+
     if (mtu > SIZE_MAX - sizeof(struct RouteBuffer_packet)) {
         return NULL;
     }
     
     // allocate memory
-    struct RouteBuffer_packet *p = (struct RouteBuffer_packet *)malloc(sizeof(*p) + mtu);
+    p = (struct RouteBuffer_packet *)malloc(sizeof(*p) + mtu);
     if (!p) {
         return NULL;
     }
@@ -79,10 +81,11 @@ static void free_free_packets (RouteBuffer *o)
 
 static void release_used_packet (RouteBuffer *o)
 {
+    struct RouteBuffer_packet *p;
     ASSERT(!LinkedList1_IsEmpty(&o->packets_used))
     
     // get packet
-    struct RouteBuffer_packet *p = UPPER_OBJECT(LinkedList1_GetFirst(&o->packets_used), struct RouteBuffer_packet, node);
+    p = UPPER_OBJECT(LinkedList1_GetFirst(&o->packets_used), struct RouteBuffer_packet, node);
     
     // remove from used packets list
     LinkedList1_Remove(&o->packets_used, &p->node);
@@ -93,10 +96,11 @@ static void release_used_packet (RouteBuffer *o)
 
 static void send_used_packet (RouteBuffer *o)
 {
+    struct RouteBuffer_packet *p;
     ASSERT(!LinkedList1_IsEmpty(&o->packets_used))
     
     // get packet
-    struct RouteBuffer_packet *p = UPPER_OBJECT(LinkedList1_GetFirst(&o->packets_used), struct RouteBuffer_packet, node);
+    p = UPPER_OBJECT(LinkedList1_GetFirst(&o->packets_used), struct RouteBuffer_packet, node);
     
     // send
     PacketPassInterface_Sender_Send(o->output, (uint8_t *)(p + 1), p->len);
@@ -118,6 +122,7 @@ static void output_handler_done (RouteBuffer *o)
 
 int RouteBuffer_Init (RouteBuffer *o, int mtu, PacketPassInterface *output, int buf_size)
 {
+    int i;
     ASSERT(mtu >= 0)
     ASSERT(PacketPassInterface_GetMTU(output) >= mtu)
     ASSERT(buf_size > 0)
@@ -136,7 +141,7 @@ int RouteBuffer_Init (RouteBuffer *o, int mtu, PacketPassInterface *output, int 
     LinkedList1_Init(&o->packets_used);
     
     // allocate packets
-    for (int i = 0; i < buf_size; i++) {
+    for (i = 0; i < buf_size; i++) {
         if (!alloc_free_packet(o)) {
             goto fail1;
         }
@@ -208,6 +213,10 @@ uint8_t * RouteBufferSource_Pointer (RouteBufferSource *o)
 
 int RouteBufferSource_Route (RouteBufferSource *o, int len, RouteBuffer *b, int copy_offset, int copy_len)
 {
+    int was_empty;
+    struct RouteBuffer_packet *p;
+    struct RouteBuffer_packet *np;
+
     ASSERT(len >= 0)
     ASSERT(len <= o->mtu)
     ASSERT(b->mtu == o->mtu)
@@ -223,9 +232,9 @@ int RouteBufferSource_Route (RouteBufferSource *o, int len, RouteBuffer *b, int 
         return 0;
     }
     
-    int was_empty = LinkedList1_IsEmpty(&b->packets_used);
+    was_empty = LinkedList1_IsEmpty(&b->packets_used);
     
-    struct RouteBuffer_packet *p = o->current_packet;
+    p = o->current_packet;
     
     // set packet length
     p->len = len;
@@ -234,7 +243,7 @@ int RouteBufferSource_Route (RouteBufferSource *o, int len, RouteBuffer *b, int 
     LinkedList1_Append(&b->packets_used, &p->node);
     
     // get a free packet
-    struct RouteBuffer_packet *np = UPPER_OBJECT(LinkedList1_GetLast(&b->packets_free), struct RouteBuffer_packet, node);
+    np = UPPER_OBJECT(LinkedList1_GetLast(&b->packets_free), struct RouteBuffer_packet, node);
     
     // remove it from free packets list
     LinkedList1_Remove(&b->packets_free, &np->node);

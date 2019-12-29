@@ -74,7 +74,11 @@ int ipaddr6_parse_ipv6_addr (MemRef name, struct ipv6_addr *out_addr)
     int compress_pos = -1;
     uint16_t block = 0;
     int empty = 1;
-    
+    int num_rear;
+    uint8_t bytes[4];
+    int cur_byte;
+    uint8_t byte;
+
     size_t i = 0;
     
     while (i < name.len) {
@@ -140,7 +144,7 @@ ipv4_done:
         compress_pos = 0;
     }
     
-    int num_rear = num_blocks - compress_pos;
+    num_rear = num_blocks - compress_pos;
     memmove(out_addr->bytes + 2 * (8 - num_rear), out_addr->bytes + 2 * compress_pos, 2 * num_rear);
     memset(out_addr->bytes + 2 * compress_pos, 0, 2 * (8 - num_rear - compress_pos));
     
@@ -155,9 +159,9 @@ ipv4_ending:
         i--;
     }
     
-    uint8_t bytes[4];
-    int cur_byte = 0;
-    uint8_t byte = 0;
+    //uint8_t bytes[4];
+    cur_byte = 0;
+    byte = 0;
     empty = 1;
     
     while (i < name.len) {
@@ -170,10 +174,11 @@ ipv4_ending:
             byte = 0;
             empty = 1;
         } else {
+            int digit;
             if (!empty && byte == 0) {
                 return 0;
             }
-            int digit = decode_decimal_digit(name.ptr[i]);
+            digit = decode_decimal_digit(name.ptr[i]);
             if (digit < 0) {
                 return 0;
             }
@@ -214,7 +219,7 @@ int ipaddr6_parse_ipv6_prefix (MemRef str, int *out_num)
         return 0;
     }
     
-    *out_num = d;
+    *out_num = (int)d;
     return 1;
 }
 
@@ -243,11 +248,13 @@ int ipaddr6_ipv6_ifaddr_from_addr_mask (struct ipv6_addr addr, struct ipv6_addr 
 
 void ipaddr6_ipv6_mask_from_prefix (int prefix, struct ipv6_addr *out_mask)
 {
+    int quot, rem, i;
+
     ASSERT(prefix >= 0)
     ASSERT(prefix <= 128)
     
-    int quot = prefix / 8;
-    int rem = prefix % 8;
+    quot = prefix / 8;
+    rem = prefix % 8;
     
     if (quot > 0) {
         memset(out_mask->bytes, UINT8_MAX, quot);
@@ -256,7 +263,7 @@ void ipaddr6_ipv6_mask_from_prefix (int prefix, struct ipv6_addr *out_mask)
         memset(out_mask->bytes + quot, 0, 16 - quot);
     }
     
-    for (int i = 0; i < rem; i++) {
+    for (i = 0; i < rem; i++) {
         out_mask->bytes[quot] |= (uint8_t)1 << (8 - i - 1);
     }
 }
@@ -303,11 +310,14 @@ int ipaddr6_ipv6_prefix_from_mask (struct ipv6_addr mask, int *out_prefix)
 
 int ipaddr6_ipv6_addrs_in_network (struct ipv6_addr addr1, struct ipv6_addr addr2, int netprefix)
 {
+    int quot, rem, i;
+    uint8_t t;
+
     ASSERT(netprefix >= 0)
     ASSERT(netprefix <= 128)
     
-    int quot = netprefix / 8;
-    int rem = netprefix % 8;
+    quot = netprefix / 8;
+    rem = netprefix % 8;
     
     if (memcmp(addr1.bytes, addr2.bytes, quot)) {
         return 0;
@@ -317,8 +327,8 @@ int ipaddr6_ipv6_addrs_in_network (struct ipv6_addr addr1, struct ipv6_addr addr
         return 1;
     }
     
-    uint8_t t = 0;
-    for (int i = 0; i < rem; i++) {
+    t = 0;
+    for (i = 0; i < rem; i++) {
         t |= (uint8_t)1 << (8 - i - 1);
     }
     
@@ -331,8 +341,9 @@ void ipaddr6_print_addr (struct ipv6_addr addr, char *out_buf)
     int largest_len = 0;
     int current_start = 0;
     int current_len = 0;
+    int i;
     
-    for (int i = 0; i < 8; i++) {
+    for (i = 0; i < 8; i++) {
         if (addr.bytes[2 * i] == 0 && addr.bytes[2 * i + 1] == 0) {
             current_len++;
             if (current_len > largest_len) {
@@ -346,7 +357,7 @@ void ipaddr6_print_addr (struct ipv6_addr addr, char *out_buf)
     }
     
     if (largest_len > 1) {
-        for (int i = 0; i < largest_start; i++) {
+        for (i = 0; i < largest_start; i++) {
             uint16_t block = ((uint16_t)addr.bytes[2 * i] << 8) | addr.bytes[2 * i + 1];
             out_buf += sprintf(out_buf, "%"PRIx16":", block);
         }
@@ -354,7 +365,7 @@ void ipaddr6_print_addr (struct ipv6_addr addr, char *out_buf)
             out_buf += sprintf(out_buf, ":");
         }
         
-        for (int i = largest_start + largest_len; i < 8; i++) {
+        for (i = largest_start + largest_len; i < 8; i++) {
             uint16_t block = ((uint16_t)addr.bytes[2 * i] << 8) | addr.bytes[2 * i + 1];
             out_buf += sprintf(out_buf, ":%"PRIx16, block);
         }
@@ -363,7 +374,7 @@ void ipaddr6_print_addr (struct ipv6_addr addr, char *out_buf)
         }
     } else {
         const char *prefix = "";
-        for (int i = 0; i < 8; i++) {
+        for (i = 0; i < 8; i++) {
             uint16_t block = ((uint16_t)addr.bytes[2 * i] << 8) | addr.bytes[2 * i + 1];
             out_buf += sprintf(out_buf, "%s%"PRIx16, prefix, block);
             prefix = ":";

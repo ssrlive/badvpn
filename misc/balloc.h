@@ -232,10 +232,11 @@ int BSizeAdd (size_t *s, size_t add)
 
 int BSizeAlign (size_t *s, size_t align)
 {
+    size_t mod;
     ASSERT(s)
     ASSERT(align > 0)
     
-    size_t mod = *s % align;
+    mod = *s % align;
     if (mod > 0) {
         if (align - mod > SIZE_MAX - *s) {
             return 0;

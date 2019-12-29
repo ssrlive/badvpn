@@ -137,8 +137,9 @@ static void _ChunkBuffer2_assert_io (ChunkBuffer2 *buf)
     
     if (buf->used > 0) {
         int datalen = buf->buffer[buf->start].len;
+        int blocklen;
         ASSERT(datalen >= 0)
-        int blocklen = bdivide_up(datalen, sizeof(struct ChunkBuffer2_block));
+        blocklen = (int)bdivide_up(datalen, sizeof(struct ChunkBuffer2_block));
         ASSERT(blocklen <= buf->used - 1)
         ASSERT(blocklen <= buf->wrap - buf->start - 1)
         ASSERT(buf->output_dest == (uint8_t *)&buf->buffer[buf->start + 1])
@@ -154,6 +155,7 @@ static void _ChunkBuffer2_assert_io (ChunkBuffer2 *buf)
 static void _ChunkBuffer2_update_input (ChunkBuffer2 *buf)
 {
     int end = _ChunkBuffer2_end(buf);
+    int free;
     
     if (buf->size - end - 1 < buf->mtu) {
         // it will never be possible to write a MTU long packet here
@@ -163,7 +165,6 @@ static void _ChunkBuffer2_update_input (ChunkBuffer2 *buf)
     }
     
     // calculate number of free blocks
-    int free;
     if (buf->used >= buf->wrap - buf->start) {
         free = buf->start - end;
     } else {
@@ -186,9 +187,10 @@ static void _ChunkBuffer2_update_output (ChunkBuffer2 *buf)
 {
     if (buf->used > 0) {
         int datalen = buf->buffer[buf->start].len;
-        ASSERT(datalen >= 0)
 #ifndef NDEBUG
-        int blocklen = bdivide_up(datalen, sizeof(struct ChunkBuffer2_block));
+        int blocklen;
+        ASSERT(datalen >= 0)
+        blocklen = (int)bdivide_up(datalen, sizeof(struct ChunkBuffer2_block));
         ASSERT(blocklen <= buf->used - 1)
         ASSERT(blocklen <= buf->wrap - buf->start - 1)
 #endif
@@ -202,22 +204,25 @@ static void _ChunkBuffer2_update_output (ChunkBuffer2 *buf)
 
 int ChunkBuffer2_calc_blocks (int chunk_len, int num)
 {
-    int chunk_data_blocks = bdivide_up(chunk_len, sizeof(struct ChunkBuffer2_block));
+    int chunk_data_blocks = (int)bdivide_up(chunk_len, sizeof(struct ChunkBuffer2_block));
+    int chunk_blocks;
+    int num_chunks;
+    int blocks;
     
     if (chunk_data_blocks > INT_MAX - 1) {
         return -1;
     }
-    int chunk_blocks = 1 + chunk_data_blocks;
+    chunk_blocks = 1 + chunk_data_blocks;
     
     if (num > INT_MAX - 1) {
         return -1;
     }
-    int num_chunks = num + 1;
+    num_chunks = num + 1;
     
     if (chunk_blocks > INT_MAX / num_chunks) {
         return -1;
     }
-    int blocks = chunk_blocks * num_chunks;
+    blocks = chunk_blocks * num_chunks;
     
     return blocks;
 }
@@ -232,7 +237,7 @@ void ChunkBuffer2_Init (ChunkBuffer2 *buf, struct ChunkBuffer2_block *buffer, in
     buf->wrap = blocks;
     buf->start = 0;
     buf->used = 0;
-    buf->mtu = bdivide_up(mtu, sizeof(struct ChunkBuffer2_block));
+    buf->mtu = (int)bdivide_up(mtu, sizeof(struct ChunkBuffer2_block));
     
     CHUNKBUFFER2_ASSERT_BUFFER(buf)
     
@@ -244,6 +249,9 @@ void ChunkBuffer2_Init (ChunkBuffer2 *buf, struct ChunkBuffer2_block *buffer, in
 
 void ChunkBuffer2_SubmitPacket (ChunkBuffer2 *buf, int len)
 {
+    int end;
+    int blocklen;
+
     ASSERT(buf->input_dest)
     ASSERT(len >= 0)
     ASSERT(len <= buf->input_avail)
@@ -251,8 +259,8 @@ void ChunkBuffer2_SubmitPacket (ChunkBuffer2 *buf, int len)
     CHUNKBUFFER2_ASSERT_BUFFER(buf)
     CHUNKBUFFER2_ASSERT_IO(buf)
     
-    int end = _ChunkBuffer2_end(buf);
-    int blocklen = bdivide_up(len, sizeof(struct ChunkBuffer2_block));
+    end = _ChunkBuffer2_end(buf);
+    blocklen = (int)bdivide_up(len, sizeof(struct ChunkBuffer2_block));
     
     ASSERT(blocklen <= buf->size - end - 1)
     ASSERT(buf->used < buf->wrap - buf->start || blocklen <= buf->start - end - 1)
@@ -279,6 +287,8 @@ void ChunkBuffer2_SubmitPacket (ChunkBuffer2 *buf, int len)
 
 void ChunkBuffer2_ConsumePacket (ChunkBuffer2 *buf)
 {
+    int blocklen;
+    int data_wrapped;
     ASSERT(buf->output_dest)
     
     CHUNKBUFFER2_ASSERT_BUFFER(buf)
@@ -287,12 +297,12 @@ void ChunkBuffer2_ConsumePacket (ChunkBuffer2 *buf)
     ASSERT(1 <= buf->wrap - buf->start)
     ASSERT(1 <= buf->used)
     
-    int blocklen = bdivide_up(buf->buffer[buf->start].len, sizeof(struct ChunkBuffer2_block));
+    blocklen = (int)bdivide_up(buf->buffer[buf->start].len, sizeof(struct ChunkBuffer2_block));
     
     ASSERT(blocklen <= buf->wrap - buf->start - 1)
     ASSERT(blocklen <= buf->used - 1)
     
-    int data_wrapped = (buf->used >= buf->wrap - buf->start);
+    data_wrapped = (buf->used >= buf->wrap - buf->start);
     
     buf->start += 1 + blocklen;
     buf->used -= 1 + blocklen;
