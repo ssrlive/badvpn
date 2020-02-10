@@ -446,5 +446,8 @@
     <ClInclude Include="..\protocol\udpgw_proto.h">
       <Filter>protocol</Filter>
     </ClInclude>
+    <ClInclude Include="..\system\BDatagram.h">
+      <Filter>system</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
