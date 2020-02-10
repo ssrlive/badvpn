@@ -58,7 +58,7 @@
  * The object must be destroyed from the job context of this
  * handler, and no further I/O may occur.
  * 
- * @param user as in {@link BTap_Init}
+ * @param used as in {@link BTap_Init}
  */
 typedef void (*BTap_handler_error) (void *used);
 
@@ -89,7 +89,7 @@ typedef struct {
  * Initializes the TAP device.
  *
  * @param o the object
- * @param BReactor {@link BReactor} we live in
+ * @param bsys {@link BReactor} we live in
  * @param devname name of the devece to open.
  *                On Linux: a network interface name. If it is NULL, no
  *                specific device will be requested, and the operating system
@@ -132,7 +132,7 @@ struct BTap_init_data {
  * Initializes the TAP device.
  *
  * @param o the object
- * @param BReactor {@link BReactor} we live in
+ * @param reactor {@link BReactor} we live in
  * @param init_data struct containing initialization parameters (to allow transparent passing).
  *                  init.data.dev_type must be either BTAP_DEV_TUN for an IP device, or
  *                  BTAP_DEV_TAP for an Ethernet device.

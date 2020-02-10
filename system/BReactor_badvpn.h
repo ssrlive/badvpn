@@ -217,7 +217,7 @@ typedef struct BFileDescriptor_t {
  * The object is initialized in not active state.
  *
  * @param bs file descriptor object to initialize
- * @param fb file descriptor to represent
+ * @param fd file descriptor to represent
  * @param handler handler function invoked by the reactor when a monitored event is detected
  * @param user value passed to the handler functuon
  */

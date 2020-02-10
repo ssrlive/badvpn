@@ -82,7 +82,7 @@ StreamRecvInterface * StreamRecvConnector_GetOutput (StreamRecvConnector *o);
  * The object enters connected state.
  *
  * @param o the object
- * @param output input to connect
+ * @param input input to connect
  */
 void StreamRecvConnector_ConnectInput (StreamRecvConnector *o, StreamRecvInterface *input);
 

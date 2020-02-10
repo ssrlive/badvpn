@@ -54,12 +54,12 @@ static int split_spec (char *name, char *sep, char **out_fields[], int num_field
     while (i < num_fields - 1) {
         char *s = strstr(name, sep);
         if (!s) {
-            DEBUG("missing separator number %d", (i + 1));
+            DEBUG_PRINT("missing separator number %d", (i + 1));
             goto fail;
         }
         
         if (!(*out_fields[i] = b_strdup_bin(name, s - name))) {
-            DEBUG("b_strdup_bin failed");
+            DEBUG_PRINT("b_strdup_bin failed");
             goto fail;
         }
         
@@ -68,7 +68,7 @@ static int split_spec (char *name, char *sep, char **out_fields[], int num_field
     }
     
     if (!(*out_fields[i] = b_strdup(name))) {
-        DEBUG("b_strdup_bin failed");
+        DEBUG_PRINT("b_strdup_bin failed");
         goto fail;
     }
     
@@ -139,7 +139,7 @@ int tapwin32_find_device (char *device_component_id, char *device_name, char (*d
     // used to find all devices with the given ComponentId
     HKEY adapter_key;
     if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, ADAPTER_KEY, 0, KEY_READ, &adapter_key) != ERROR_SUCCESS) {
-        DEBUG("Error opening adapter key");
+        DEBUG_PRINT("Error opening adapter key");
         return 0;
     }
     

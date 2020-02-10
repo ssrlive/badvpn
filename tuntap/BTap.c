@@ -108,7 +108,7 @@ static void fd_handler (BTap *o, int events)
         ASSERT(o->output_packet)
         
         // try reading into the buffer
-        int bytes = read(o->fd, o->output_packet, o->frame_mtu);
+        int bytes = (int) read(o->fd, o->output_packet, o->frame_mtu);
         if (bytes <= 0) {
             // Treat zero return value the same as EAGAIN.
             // See: https://bugzilla.kernel.org/show_bug.cgi?id=96381
@@ -170,7 +170,7 @@ void output_handler_recv (BTap *o, uint8_t *data)
 #else
     
     // attempt read
-    int bytes = read(o->fd, data, o->frame_mtu);
+    int bytes = (int) read(o->fd, data, o->frame_mtu);
     if (bytes <= 0) {
         if (bytes == 0 || errno == EAGAIN || errno == EWOULDBLOCK) {
             // See note about zero return in fd_handler.
@@ -571,7 +571,7 @@ void BTap_Send (BTap *o, uint8_t *data, int data_len)
     
 #else
     
-    int bytes = write(o->fd, data, data_len);
+    int bytes = (int) write(o->fd, data, data_len);
     if (bytes < 0) {
         // malformed packets will cause errors, ignore them and act like
         // the packet was accepeted

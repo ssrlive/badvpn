@@ -353,6 +353,7 @@ int tun2socks_main (int argc, char **argv)
     }
     
     if (options.udpgw_remote_server_addr) {
+        BAddr dnsgw = { 0 };
         // compute maximum UDP payload size we need to pass through udpgw
         udp_mtu = BTap_GetMTU(&device) - (int)(sizeof(struct ipv4_header) + sizeof(struct udp_header));
         if (options.netif_ip6addr) {
@@ -374,7 +375,7 @@ int tun2socks_main (int argc, char **argv)
         
         // init udpgw client
         if (!SocksUdpGwClient_Init(&udpgw_client, udp_mtu, DEFAULT_UDPGW_MAX_CONNECTIONS, options.udpgw_connection_buffer_size, UDPGW_KEEPALIVE_TIME,
-                                   socks_server_addr, socks_auth_info, socks_num_auth_info,
+                                   socks_server_addr, dnsgw, socks_auth_info, socks_num_auth_info,
                                    udpgw_remote_server_addr, UDPGW_RECONNECT_TIME, &ss, NULL, udpgw_client_handler_received
         )) {
             BLog(BLOG_ERROR, "SocksUdpGwClient_Init failed");
@@ -417,7 +418,7 @@ int tun2socks_main (int argc, char **argv)
     
     // free clients
     LinkedList1Node *node;
-    while (node = LinkedList1_GetFirst(&tcp_clients)) {
+    while ((node = LinkedList1_GetFirst(&tcp_clients))) {
         struct tcp_client *client = UPPER_OBJECT(node, struct tcp_client, list_node);
         client_murder(client);
     }
@@ -1216,7 +1217,7 @@ err_t common_netif_output (struct netif *netif, struct pbuf *p)
             }
             memcpy(device_write_buf + len, p->payload, p->len);
             len += p->len;
-        } while (p = p->next);
+        } while ((p = p->next));
         
         SYNC_FROMHERE
         BTap_Send(&device, device_write_buf, len);
@@ -1306,7 +1307,7 @@ err_t listener_accept_func (void *arg, struct tcp_pcb *newpcb, err_t err)
     
     // init SOCKS
     if (!BSocksClient_Init(&client->socks_client, socks_server_addr, socks_auth_info, socks_num_auth_info,
-                           addr, (BSocksClient_handler)client_socks_handler, client, &ss)) {
+                           addr, /*udp=*/false, (BSocksClient_handler)client_socks_handler, client, &ss)) {
         BLog(BLOG_ERROR, "listener accept: BSocksClient_Init failed");
         goto fail1;
     }

@@ -85,7 +85,7 @@ PacketRecvInterface * PacketRecvConnector_GetOutput (PacketRecvConnector *o);
  * The object enters connected state.
  *
  * @param o the object
- * @param output input to connect. Its MTU must be <= MTU specified in
+ * @param input input to connect. Its MTU must be <= MTU specified in
  *               {@link PacketRecvConnector_Init}.
  */
 void PacketRecvConnector_ConnectInput (PacketRecvConnector *o, PacketRecvInterface *input);

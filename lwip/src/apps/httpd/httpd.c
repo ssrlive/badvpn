@@ -2283,7 +2283,7 @@ http_init_file(struct http_state *hs, struct fs_file *file, int is_09, const cha
          search for the end of the header. */
       char *file_start = lwip_strnstr(hs->file, CRLF CRLF, hs->left);
       if (file_start != NULL) {
-        int diff = file_start + 4 - hs->file;
+        int diff = (int) (file_start + 4 - hs->file);
         hs->file += diff;
         hs->left -= (u32_t)diff;
       }

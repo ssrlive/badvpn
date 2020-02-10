@@ -102,7 +102,7 @@ static void BAVL_Init (BAVL *o, int offset, BAVL_comparator comparator, void *us
  *              - the greatest node lesser than the inserted value, or (not in order)
  *              - the smallest node greater than the inserted value, or
  *              - NULL meaning there were no nodes in the tree.
- * @param 1 on success, 0 if an element with an equal value is already in the tree
+ * @return 1 on success, 0 if an element with an equal value is already in the tree
  */
 static int BAVL_Insert (BAVL *o, BAVLNode *node, BAVLNode **ref);
 
@@ -357,14 +357,14 @@ static void _BAVL_swap_nodes (BAVL *tree, BAVLNode *n1, BAVLNode *n2)
         side = (n2 == n1->link[1]);
         c = n1->link[!side];
         
-        if (n1->link[0] = n2->link[0]) {
+        if ((n1->link[0] = n2->link[0])) {
             n1->link[0]->parent = n1;
         }
-        if (n1->link[1] = n2->link[1]) {
+        if ((n1->link[1] = n2->link[1])) {
             n1->link[1]->parent = n1;
         }
         
-        if (n2->parent = n1->parent) {
+        if ((n2->parent = n1->parent)) {
             n2->parent->link[n1 == n1->parent->link[1]] = n2;
         } else {
             tree->root = n2;
@@ -372,7 +372,7 @@ static void _BAVL_swap_nodes (BAVL *tree, BAVLNode *n1, BAVLNode *n2)
         
         n2->link[side] = n1;
         n1->parent = n2;
-        if (n2->link[!side] = c) {
+        if ((n2->link[!side] = c)) {
             c->parent = n2;
         }
     } else {
@@ -380,12 +380,12 @@ static void _BAVL_swap_nodes (BAVL *tree, BAVLNode *n1, BAVLNode *n2)
         
         // swap parents
         temp = n1->parent;
-        if (n1->parent = n2->parent) {
+        if ((n1->parent = n2->parent)) {
             n1->parent->link[n2 == n2->parent->link[1]] = n1;
         } else {
             tree->root = n1;
         }
-        if (n2->parent = temp) {
+        if ((n2->parent = temp)) {
             n2->parent->link[n1 == temp->link[1]] = n2;
         } else {
             tree->root = n2;
@@ -393,19 +393,19 @@ static void _BAVL_swap_nodes (BAVL *tree, BAVLNode *n1, BAVLNode *n2)
         
         // swap left children
         temp = n1->link[0];
-        if (n1->link[0] = n2->link[0]) {
+        if ((n1->link[0] = n2->link[0])) {
             n1->link[0]->parent = n1;
         }
-        if (n2->link[0] = temp) {
+        if ((n2->link[0] = temp)) {
             n2->link[0]->parent = n2;
         }
         
         // swap right children
         temp = n1->link[1];
-        if (n1->link[1] = n2->link[1]) {
+        if ((n1->link[1] = n2->link[1])) {
             n1->link[1]->parent = n1;
         }
-        if (n2->link[1] = temp) {
+        if ((n2->link[1] = temp)) {
             n2->link[1]->parent = n2;
         }
     }
