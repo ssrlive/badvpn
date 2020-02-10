@@ -40,14 +40,6 @@
 #define UDPGW_CLIENT_FLAG_IPV6 (1 << 3)
 
 B_START_PACKED
-struct socks_udp_header {
-    uint16_t rsv;
-    uint8_t frag;
-    uint8_t atyp;
-} B_PACKED;
-B_END_PACKED
-
-B_START_PACKED
 struct udpgw_header {
     uint8_t flags;
     uint16_t conid;

@@ -649,31 +649,34 @@ int BDatagram_GetLastReceiveAddrs (BDatagram *o, BAddr *remote_addr, BIPAddr *lo
     *local_addr = o->recv.local_addr;
     return 1;
 }
-int BDatagram_GetLocalPort (BDatagram *o, uint16_t *local_port)
+
+int BDatagram_GetLocalAddr (BDatagram *o, BAddr *local_addr)
 {
     struct BDatagram_sys_addr sysaddr;
+    socklen_t addr_size;
     BAddr addr;
-    socklen_t addr_size = sizeof(sysaddr.addr.generic);
 
     DebugObject_Access(&o->d_obj);
-
+    
+    addr_size = sizeof(sysaddr.addr.generic);
     if (getsockname(o->sock, &sysaddr.addr.generic, &addr_size) != 0) {
-        BLog(BLOG_ERROR, "getsockname failed");
+        BLog(BLOG_ERROR, "BDatagram_GetLocalAddr: getsockname failed");
+        return 0;
+    }
+    sysaddr.len = addr_size;
+    
+    addr_sys_to_socket(&addr, sysaddr);
+    
+    if (addr.type == BADDR_TYPE_NONE) {
+        BLog(BLOG_ERROR, "BDatagram_GetLocalAddr: Unsupported address family "
+            "from getsockname: %d", (int)(sysaddr.addr.generic.sa_family));
         return 0;
     }
 
-     addr_sys_to_socket(&addr, sysaddr);
-    if (addr.type == BADDR_TYPE_IPV4) {
-        *local_port = addr.ipv4.port;
-        return 1;
-    }
-    if (addr.type == BADDR_TYPE_IPV6) {
-        *local_port = addr.ipv6.port;
-        return 1;
-    }
-    BLog(BLOG_ERROR, "Unknown address type from getsockname: %d", addr.type);
-    return 0;
+    *local_addr = addr;
+    return 1;
 }
+
 int BDatagram_SetReuseAddr (BDatagram *o, int reuse)
 {
     DebugObject_Access(&o->d_obj);

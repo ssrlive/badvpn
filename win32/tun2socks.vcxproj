@@ -195,7 +195,12 @@
     <ClCompile Include="..\lwip\src\core\netif.c" />
     <ClCompile Include="..\lwip\src\core\pbuf.c" />
     <ClCompile Include="..\lwip\src\core\stats.c" />
-    <ClCompile Include="..\lwip\src\core\sys.c" />
+    <ClCompile Include="..\lwip\src\core\sys.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\lwip\src\core\tcp.c" />
     <ClCompile Include="..\lwip\src\core\tcp_in.c" />
     <ClCompile Include="..\lwip\src\core\tcp_out.c" />
@@ -264,6 +269,7 @@
     <ClInclude Include="..\socksclient\BSocksClient.h" />
     <ClInclude Include="..\socks_udp_client\SocksUdpClient.h" />
     <ClInclude Include="..\system\BConnection_win.h" />
+    <ClInclude Include="..\system\BDatagram.h" />
     <ClInclude Include="..\system\BDatagram_win.h" />
     <ClInclude Include="..\system\BNetwork.h" />
     <ClInclude Include="..\system\BReactor_badvpn.h" />

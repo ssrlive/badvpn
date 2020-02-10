@@ -186,10 +186,11 @@ static void _ChunkBuffer2_update_input (ChunkBuffer2 *buf)
 static void _ChunkBuffer2_update_output (ChunkBuffer2 *buf)
 {
     if (buf->used > 0) {
-        int datalen = buf->buffer[buf->start].len;
-#ifndef NDEBUG
         int blocklen;
+        int datalen = buf->buffer[buf->start].len;
         ASSERT(datalen >= 0)
+        (void)blocklen;
+#ifndef NDEBUG
         blocklen = (int)bdivide_up(datalen, sizeof(struct ChunkBuffer2_block));
         ASSERT(blocklen <= buf->used - 1)
         ASSERT(blocklen <= buf->wrap - buf->start - 1)
@@ -204,10 +205,12 @@ static void _ChunkBuffer2_update_output (ChunkBuffer2 *buf)
 
 int ChunkBuffer2_calc_blocks (int chunk_len, int num)
 {
-    int chunk_data_blocks = (int)bdivide_up(chunk_len, sizeof(struct ChunkBuffer2_block));
+    int chunk_data_blocks;
     int chunk_blocks;
     int num_chunks;
     int blocks;
+
+    chunk_data_blocks = (int)bdivide_up(chunk_len, sizeof(struct ChunkBuffer2_block));
     
     if (chunk_data_blocks > INT_MAX - 1) {
         return -1;

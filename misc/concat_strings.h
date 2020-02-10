@@ -47,8 +47,6 @@ static char * concat_strings (int num, ...)
     // calculate sum of lengths
     size_t sum = 0;
     va_list ap;
-
-    ASSERT(num >= 0)
     va_start(ap, num);
     for (i = 0; i < num; i++) {
         const char *str = va_arg(ap, const char *);

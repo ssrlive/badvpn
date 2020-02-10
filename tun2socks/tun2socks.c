@@ -65,6 +65,7 @@
 #include <lwip/nd6.h>
 #include <lwip/ip6_frag.h>
 #include <tun2socks/SocksUdpGwClient.h>
+#include <socks_udp_client/SocksUdpClient.h>
 
 #ifndef BADVPN_USE_WINAPI
 #include <base/BLog_syslog.h>
@@ -271,6 +272,10 @@ uint8_t *device_write_buf;
 // device reading
 SinglePacketBuffer device_read_buffer;
 PacketPassInterface device_read_interface;
+
+// UDP support mode
+enum UdpMode {UdpModeNone, UdpModeUdpgw, UdpModeSocks};
+enum UdpMode udp_mode;
 
 // udpgw client
 SocksUdpGwClient udpgw_client;
@@ -628,29 +633,51 @@ int main (int argc, char **argv)
         udp_mtu = 0;
     }
     
+    // Compute the largest possible UDP payload that we can receive from or send to the
+    // TUN device.
+    udp_mtu = BTap_GetMTU(&device) - (int)(sizeof(struct ipv4_header) + sizeof(struct udp_header));
+    if (options.netif_ip6addr) {
+        int udp_ip6_mtu = BTap_GetMTU(&device) - (int)(sizeof(struct ipv6_header) + sizeof(struct udp_header));
+        if (udp_mtu < udp_ip6_mtu) {
+            udp_mtu = udp_ip6_mtu;
+        }
+    }
+    if (udp_mtu < 0) {
+        udp_mtu = 0;
+    }
+
     if (options.udpgw_remote_server_addr) {
+        int udpgw_mtu;
 #ifndef __ANDROID__
         BAddr dnsgw = { 0 };
 #endif
+        udp_mode = UdpModeUdpgw;
+
         // make sure our UDP payloads aren't too large for udpgw
-        int udpgw_mtu = udpgw_compute_mtu(udp_mtu);
+        udpgw_mtu = udpgw_compute_mtu(udp_mtu);
         if (udpgw_mtu < 0 || udpgw_mtu > PACKETPROTO_MAXPAYLOAD) {
             BLog(BLOG_ERROR, "device MTU is too large for UDP");
             goto fail4a;
         }
         
         // init udpgw client
-        if (!SocksUdpGwClient_Init(&udpgw_client, udp_mtu, DEFAULT_UDPGW_MAX_CONNECTIONS, options.udpgw_connection_buffer_size, UDPGW_KEEPALIVE_TIME,
-                                   socks_server_addr,dnsgw, socks_auth_info, socks_num_auth_info,
-                                   udpgw_remote_server_addr, UDPGW_RECONNECT_TIME, &ss, NULL, udp_send_packet_to_device
-        )) {
+        if (!SocksUdpGwClient_Init(&udpgw_client, udp_mtu, DEFAULT_UDPGW_MAX_CONNECTIONS,
+            options.udpgw_connection_buffer_size, UDPGW_KEEPALIVE_TIME, socks_server_addr, dnsgw,
+            socks_auth_info, socks_num_auth_info, udpgw_remote_server_addr,
+            UDPGW_RECONNECT_TIME, &ss, NULL, udp_send_packet_to_device))
+        {
             BLog(BLOG_ERROR, "SocksUdpGwClient_Init failed");
             goto fail4a;
         }
     } else if (options.socks5_udp) {
+        udp_mode = UdpModeSocks;
+
+        // init SOCKS UDP client
         SocksUdpClient_Init(&socks_udp_client, udp_mtu, DEFAULT_UDPGW_MAX_CONNECTIONS,
-                            UDPGW_KEEPALIVE_TIME, socks_server_addr, socks_auth_info,
-                            socks_num_auth_info, &ss, NULL, udp_send_packet_to_device);
+            SOCKS_UDP_SEND_BUFFER_PACKETS, UDPGW_KEEPALIVE_TIME, socks_server_addr,
+            socks_auth_info, socks_num_auth_info, &ss, NULL, udp_send_packet_to_device);
+    } else {
+        udp_mode = UdpModeNone;
     }
 
     // init lwip init job
@@ -718,9 +745,9 @@ int main (int argc, char **argv)
 
 fail5:
     BPending_Free(&lwip_init_job);
-    if (options.udpgw_remote_server_addr) {
+    if (udp_mode == UdpModeUdpgw) {
         SocksUdpGwClient_Free(&udpgw_client);
-    } else if (options.socks5_udp) {
+    } else if (udp_mode == UdpModeSocks) {
         SocksUdpClient_Free(&socks_udp_client);
     }
 fail4a:
@@ -847,7 +874,7 @@ int parse_arguments (int argc, char *argv[])
     options.udpgw_max_connections = DEFAULT_UDPGW_MAX_CONNECTIONS;
     options.udpgw_connection_buffer_size = DEFAULT_UDPGW_CONNECTION_BUFFER_SIZE;
     options.udpgw_transparent_dns = 0;
-	options.socks5_udp = 0;
+    options.socks5_udp = 0;
     for (i = 1; i < argc; i++) {
         char *arg = argv[i];
         if (!strcmp(arg, "--help")) {
@@ -1437,15 +1464,16 @@ int process_device_udp_packet (uint8_t *data, int data_len)
     BAddr local_addr;
     BAddr remote_addr;
     int is_dns;
-    
-    uint8_t ip_version = 0;
+    uint8_t ip_version;
 
     ASSERT(data_len >= 0)
-
-    // do nothing if we don't have udpgw
-    if (!options.udpgw_remote_server_addr&& !options.socks5_udp) {
+    
+    // do nothing if we don't use udpgw or SOCKS UDP
+    if (udp_mode == UdpModeNone) {
         goto fail;
     }
+    
+    ip_version = 0;
     if (data_len > 0) {
         ip_version = (data[0] >> 4);
     }
@@ -1488,11 +1516,9 @@ int process_device_udp_packet (uint8_t *data, int data_len)
 
             // if transparent DNS is enabled, any packet arriving at out netif
             // address to port 53 is considered a DNS packet
-#ifdef __ANDROID__
-            is_dns = (options.dnsgw && udp_header.dest_port == hton16(53));
-#else
-            is_dns = (udp_header.dest_port == hton16(53));
-#endif
+            is_dns = (options.udpgw_transparent_dns &&
+                      ipv4_header.destination_address == netif_ipaddr.ipv4 &&
+                      udp_header.dest_port == hton16(53));
             // identify the packet to make sure it's a DNS query packet
             // any DNS answer is not intercepted.
             if (is_dns) {
@@ -1561,14 +1587,15 @@ int process_device_udp_packet (uint8_t *data, int data_len)
         BLog(BLOG_ERROR, "packet is too large, cannot send to udpgw");
         goto fail;
     }
-
-	if (options.udpgw_remote_server_addr) {
-        // submit packet to udpgw
+    
+    // submit packet to udpgw or SOCKS UDP
+    if (udp_mode == UdpModeUdpgw) {
         SocksUdpGwClient_SubmitPacket(&udpgw_client, local_addr, remote_addr,
                                       is_dns, data, data_len);
-    } else if (options.socks5_udp) {
+    } else if (udp_mode == UdpModeSocks) {
         SocksUdpClient_SubmitPacket(&socks_udp_client, local_addr, remote_addr, data, data_len);
     }
+    
     return 1;
 
 fail:
@@ -1719,8 +1746,10 @@ err_t listener_accept_func (void *arg, struct tcp_pcb *newpcb, err_t err)
     }
 
     // init SOCKS
-    if (!BSocksClient_Init(&client->socks_client, socks_server_addr, socks_auth_info, socks_num_auth_info,
-                           addr,false,  (BSocksClient_handler)client_socks_handler, client, &ss)) {
+    if (!BSocksClient_Init(&client->socks_client,
+        socks_server_addr, socks_auth_info, socks_num_auth_info, addr, /*udp=*/false,
+        (BSocksClient_handler)client_socks_handler, client, &ss))
+    {
         BLog(BLOG_ERROR, "listener accept: BSocksClient_Init failed");
         goto fail1;
     }
@@ -2243,11 +2272,14 @@ out:
 void udp_send_packet_to_device (void *unused, BAddr local_addr, BAddr remote_addr, const uint8_t *data, int data_len)
 {
     int packet_length = 0;
+    char const *source_name;
 
-    ASSERT(options.udpgw_remote_server_addr)
+    ASSERT(udp_mode != UdpModeNone)
     ASSERT(local_addr.type == BADDR_TYPE_IPV4 || local_addr.type == BADDR_TYPE_IPV6)
     ASSERT(local_addr.type == remote_addr.type)
     ASSERT(data_len >= 0)
+
+    source_name = (udp_mode == UdpModeUdpgw) ? "udpgw" : "SOCKS UDP";
 
     switch (local_addr.type) {
         case BADDR_TYPE_IPV4: {
@@ -2256,7 +2288,7 @@ void udp_send_packet_to_device (void *unused, BAddr local_addr, BAddr remote_add
 #ifdef __ANDROID__
             BLog(BLOG_INFO, "UDP: from udprelay %d bytes", data_len);
 #else
-            BLog(BLOG_INFO, "UDP: from udpgw %d bytes", data_len);
+            BLog(BLOG_INFO, "UDP: from %s %d bytes", source_name, data_len);
 #endif
 
             if (data_len > UINT16_MAX - (sizeof(struct ipv4_header) + sizeof(struct udp_header)) ||
@@ -2299,14 +2331,14 @@ void udp_send_packet_to_device (void *unused, BAddr local_addr, BAddr remote_add
 #ifdef __ANDROID__
             BLog(BLOG_INFO, "UDP/IPv6: from udprelay %d bytes", data_len);
 #else
-            BLog(BLOG_INFO, "UDP/IPv6: from udpgw %d bytes", data_len);
+            BLog(BLOG_INFO, "UDP/IPv6: from %s %d bytes", source_name, data_len);
 #endif
 
             if (!options.netif_ip6addr) {
 #ifdef __ANDROID__
                 BLog(BLOG_ERROR, "got IPv6 packet from udprelay but IPv6 is disabled");
 #else
-                BLog(BLOG_ERROR, "got IPv6 packet from udpgw but IPv6 is disabled");
+                BLog(BLOG_ERROR, "got IPv6 packet from %s but IPv6 is disabled", source_name);
 #endif
                 return;
             }
