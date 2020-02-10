@@ -50,7 +50,7 @@ int main ()
     // initialize reactor
     BReactor reactor;
     if (!BReactor_Init(&reactor)) {
-        DEBUG("BReactor_Init failed");
+        DEBUG_PRINT("BReactor_Init failed");
         return 1;
     }
     
@@ -61,7 +61,7 @@ int main ()
     // initialize queue
     PacketPassFairQueue fq;
     if (!PacketPassFairQueue_Init(&fq, RandomPacketSink_GetInput(&sink), BReactor_PendingGroup(&reactor), 0, 1)) {
-        DEBUG("PacketPassFairQueue_Init failed");
+        DEBUG_PRINT("PacketPassFairQueue_Init failed");
         return 1;
     }
     

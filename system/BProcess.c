@@ -239,7 +239,7 @@ int BProcess_Init2 (BProcess *o, BProcessManager *m, BProcess_handler handler, v
         // Start with a small auto-allocated list and only if it turns out
         // to be too small resort to malloc.
         while (1) {
-            int groups_ret = getgrouplist(params.username, pwd.pw_gid, (int *)groups, &num_groups);
+            int groups_ret = getgrouplist(params.username, pwd.pw_gid, groups, &num_groups);
             if ((groups_ret < 0) ? (num_groups <= 0) : (num_groups != groups_ret)) {
                 BLog(BLOG_ERROR, "getgrouplist behaved inconsistently");
                 goto fail2;

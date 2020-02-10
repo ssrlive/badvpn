@@ -64,7 +64,7 @@ int main (int argc, char **argv)
     }
     
     if (!BNetwork_GlobalInit()) {
-        DEBUG("BNetwork_GlobalInit failed");
+        DEBUG_PRINT("BNetwork_GlobalInit failed");
         goto fail0;
     }
     
@@ -73,17 +73,17 @@ int main (int argc, char **argv)
     BLog_InitStdout();
     
     if (!BReactor_Init(&reactor)) {
-        DEBUG("BReactor_Init failed");
+        DEBUG_PRINT("BReactor_Init failed");
         goto fail1;
     }
     
     if (!BSignal_Init(&reactor, signal_handler, NULL)) {
-        DEBUG("BSignal_Init failed");
+        DEBUG_PRINT("BSignal_Init failed");
         goto fail2;
     }
     
     if (!BProcessManager_Init(&manager, &reactor)) {
-        DEBUG("BProcessManager_Init failed");
+        DEBUG_PRINT("BProcessManager_Init failed");
         goto fail3;
     }
     
@@ -91,7 +91,7 @@ int main (int argc, char **argv)
         monitor_handler_event,
         monitor_handler_error
     )) {
-        DEBUG("NCDUdevMonitor_Init failed");
+        DEBUG_PRINT("NCDUdevMonitor_Init failed");
         goto fail4;
     }
     
@@ -114,7 +114,7 @@ fail0:
 
 void signal_handler (void *user)
 {
-    DEBUG("termination requested");
+    DEBUG_PRINT("termination requested");
     
     BReactor_Quit(&reactor, 1);
 }
@@ -143,9 +143,9 @@ void monitor_handler_event (void *unused)
 void monitor_handler_error (void *unused, int is_error)
 {
     if (is_error) {
-        DEBUG("monitor error");
+        DEBUG_PRINT("monitor error");
     } else {
-        DEBUG("monitor finished");
+        DEBUG_PRINT("monitor finished");
     }
     
     BReactor_Quit(&reactor, (is_error ? 1 : 0));

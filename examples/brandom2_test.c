@@ -42,13 +42,13 @@ int main (int argc, char *argv[])
     int ret = 1;
     
     if (!BRandom2_Init(&brandom, 0)) {
-        DEBUG("BRandom2_Init failed");
+        DEBUG_PRINT("BRandom2_Init failed");
         goto fail0;
     }
     
     uint32_t numbers[NUM_NUMBERS];
     if (!BRandom2_GenBytes(&brandom, numbers, sizeof(numbers))) {
-        DEBUG("BRandom2_GenBytes failed");
+        DEBUG_PRINT("BRandom2_GenBytes failed");
         goto fail1;
     }
     

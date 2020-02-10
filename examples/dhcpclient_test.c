@@ -63,29 +63,29 @@ int main (int argc, char **argv)
     BLog_InitStdout();
     
     if (!BNetwork_GlobalInit()) {
-        DEBUG("BNetwork_GlobalInit failed");
+        DEBUG_PRINT("BNetwork_GlobalInit failed");
         goto fail1;
     }
     
     if (!BReactor_Init(&reactor)) {
-        DEBUG("BReactor_Init failed");
+        DEBUG_PRINT("BReactor_Init failed");
         goto fail1;
     }
     
     if (!BRandom2_Init(&random2, 0)) {
-        DEBUG("BRandom2_Init failed");
+        DEBUG_PRINT("BRandom2_Init failed");
         goto fail1a;
     }
     
     if (!BSignal_Init(&reactor, signal_handler, NULL)) {
-        DEBUG("BSignal_Init failed");
+        DEBUG_PRINT("BSignal_Init failed");
         goto fail2;
     }
     
-    struct BDHCPClient_opts opts = {};
+    struct BDHCPClient_opts opts = { 0 };
     
     if (!BDHCPClient_Init(&dhcp, ifname, opts, &reactor, &random2, dhcp_handler, NULL)) {
-        DEBUG("BDHCPClient_Init failed");
+        DEBUG_PRINT("BDHCPClient_Init failed");
         goto fail3;
     }
     
@@ -108,7 +108,7 @@ fail0:
 
 void signal_handler (void *user)
 {
-    DEBUG("termination requested");
+    DEBUG_PRINT("termination requested");
     
     BReactor_Quit(&reactor, 0);
 }

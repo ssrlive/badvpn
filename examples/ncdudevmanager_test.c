@@ -59,7 +59,7 @@ int main (int argc, char **argv)
     int no_udev = (argc == 2);
     
     if (!BNetwork_GlobalInit()) {
-        DEBUG("BNetwork_GlobalInit failed");
+        DEBUG_PRINT("BNetwork_GlobalInit failed");
         goto fail0;
     }
     
@@ -68,7 +68,7 @@ int main (int argc, char **argv)
     BLog_InitStdout();
     
     if (!BReactor_Init(&reactor)) {
-        DEBUG("BReactor_Init failed");
+        DEBUG_PRINT("BReactor_Init failed");
         goto fail1;
     }
     
@@ -83,7 +83,7 @@ int main (int argc, char **argv)
     }
     
     if (!BProcessManager_Init(&manager, &reactor)) {
-        DEBUG("BProcessManager_Init failed");
+        DEBUG_PRINT("BProcessManager_Init failed");
         goto fail3;
     }
     

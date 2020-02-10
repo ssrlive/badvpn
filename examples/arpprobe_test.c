@@ -66,22 +66,22 @@ int main (int argc, char **argv)
     BLog_InitStdout();
     
     if (!BNetwork_GlobalInit()) {
-        DEBUG("BNetwork_GlobalInit failed");
+        DEBUG_PRINT("BNetwork_GlobalInit failed");
         goto fail1;
     }
     
     if (!BReactor_Init(&reactor)) {
-        DEBUG("BReactor_Init failed");
+        DEBUG_PRINT("BReactor_Init failed");
         goto fail1;
     }
     
     if (!BSignal_Init(&reactor, signal_handler, NULL)) {
-        DEBUG("BSignal_Init failed");
+        DEBUG_PRINT("BSignal_Init failed");
         goto fail2;
     }
     
     if (!BArpProbe_Init(&arpprobe, ifname, addr, &reactor, NULL, arpprobe_handler)) {
-        DEBUG("BArpProbe_Init failed");
+        DEBUG_PRINT("BArpProbe_Init failed");
         goto fail3;
     }
     
@@ -102,7 +102,7 @@ fail0:
 
 void signal_handler (void *user)
 {
-    DEBUG("termination requested");
+    DEBUG_PRINT("termination requested");
     
     BReactor_Quit(&reactor, 0);
 }

@@ -69,7 +69,7 @@ int main (int argc, char **argv)
     
     // init reactor (event loop)
     if (!BReactor_Init(&reactor)) {
-        DEBUG("BReactor_Init failed");
+        DEBUG_PRINT("BReactor_Init failed");
         goto fail1;
     }
     
@@ -81,13 +81,13 @@ int main (int argc, char **argv)
     
     // init BUnixSignal for catching signals
     if (!BUnixSignal_Init(&unixsignal, &reactor, set, unixsignal_handler, NULL)) {
-        DEBUG("BUnixSignal_Init failed");
+        DEBUG_PRINT("BUnixSignal_Init failed");
         goto fail2;
     }
     
     // init process manager
     if (!BProcessManager_Init(&manager, &reactor)) {
-        DEBUG("BProcessManager_Init failed");
+        DEBUG_PRINT("BProcessManager_Init failed");
         goto fail3;
     }
     
@@ -99,7 +99,7 @@ int main (int argc, char **argv)
     
     // start child process
     if (!BProcess_InitWithFds(&process, &manager, process_handler, NULL, program, p_argv, NULL, fds, fds_map)) {
-        DEBUG("BProcess_Init failed");
+        DEBUG_PRINT("BProcess_Init failed");
         goto fail4;
     }
     
@@ -123,7 +123,7 @@ fail0:
 
 void unixsignal_handler (void *user, int signo)
 {
-    DEBUG("received %s, terminating child", (signo == SIGINT ? "SIGINT" : "SIGTERM"));
+    DEBUG_PRINT("received %s, terminating child", (signo == SIGINT ? "SIGINT" : "SIGTERM"));
     
     // send SIGTERM to child
     BProcess_Terminate(&process);
@@ -131,7 +131,7 @@ void unixsignal_handler (void *user, int signo)
 
 void process_handler (void *user, int normally, uint8_t normally_exit_status)
 {
-    DEBUG("process terminated");
+    DEBUG_PRINT("process terminated");
     
     int ret = (normally ? normally_exit_status : 1);
     

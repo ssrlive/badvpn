@@ -186,12 +186,12 @@ static void print_value (NCDValue *v, unsigned int indent)
 {
     ExpString estr;
     if (!ExpString_Init(&estr)) {
-        DEBUG("ExpString_Init failed");
+        DEBUG_PRINT("ExpString_Init failed");
         exit(1);
     }
     
     if (!generate_val(v, &estr)) {
-        DEBUG("generate_val failed");
+        DEBUG_PRINT("generate_val failed");
         exit(1);
     }
     
@@ -285,14 +285,14 @@ int main (int argc, char **argv)
     // parse
     NCDProgram prog;
     if (!NCDConfigParser_Parse(text, strlen(text), &prog)) {
-        DEBUG("NCDConfigParser_Parse failed");
+        DEBUG_PRINT("NCDConfigParser_Parse failed");
         goto fail1;
     }
     
     // desugar
     if (desugar) {
         if (!NCDSugar_Desugar(&prog)) {
-            DEBUG("NCDSugar_Desugar failed");
+            DEBUG_PRINT("NCDSugar_Desugar failed");
             goto fail2;
         }
     }

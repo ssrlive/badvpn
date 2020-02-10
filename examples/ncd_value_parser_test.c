@@ -49,7 +49,7 @@ int main (int argc, char *argv[])
     
     NCDStringIndex string_index;
     if (!NCDStringIndex_Init(&string_index)) {
-        DEBUG("NCDStringIndex_Init failed");
+        DEBUG_PRINT("NCDStringIndex_Init failed");
         goto fail01;
     }
     
@@ -59,14 +59,14 @@ int main (int argc, char *argv[])
     // parse
     NCDValRef val;
     if (!NCDValParser_Parse(MemRef_MakeCstr(argv[1]), &mem, &val)) {
-        DEBUG("NCDValParser_Parse failed");
+        DEBUG_PRINT("NCDValParser_Parse failed");
         goto fail1;
     }
     
     // generate value string
     char *str = NCDValGenerator_Generate(val);
     if (!str) {
-        DEBUG("NCDValGenerator_Generate failed");
+        DEBUG_PRINT("NCDValGenerator_Generate failed");
         goto fail1;
     }
     

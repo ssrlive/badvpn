@@ -58,7 +58,7 @@ int main (int argc, char **argv)
     
     int ifindex;
     if (!badvpn_get_iface_info(argv[1], NULL, NULL, &ifindex)) {
-        DEBUG("get_iface_info failed");
+        DEBUG_PRINT("get_iface_info failed");
         goto fail0;
     }
     
@@ -67,24 +67,24 @@ int main (int argc, char **argv)
     BLog_InitStdout();
     
     if (!BNetwork_GlobalInit()) {
-        DEBUG("BNetwork_GlobalInit failed");
+        DEBUG_PRINT("BNetwork_GlobalInit failed");
         goto fail1;
     }
     
     if (!BReactor_Init(&reactor)) {
-        DEBUG("BReactor_Init failed");
+        DEBUG_PRINT("BReactor_Init failed");
         goto fail1;
     }
     
     if (!BSignal_Init(&reactor, signal_handler, NULL)) {
-        DEBUG("BSignal_Init failed");
+        DEBUG_PRINT("BSignal_Init failed");
         goto fail2;
     }
     
     int watch_flags = NCDIFMONITOR_WATCH_LINK|NCDIFMONITOR_WATCH_IPV4_ADDR|NCDIFMONITOR_WATCH_IPV6_ADDR;
     
     if (!NCDInterfaceMonitor_Init(&monitor, ifindex, watch_flags, &reactor, NULL, monitor_handler, monitor_handler_error)) {
-        DEBUG("NCDInterfaceMonitor_Init failed");
+        DEBUG_PRINT("NCDInterfaceMonitor_Init failed");
         goto fail3;
     }
     
@@ -105,7 +105,7 @@ fail0:
 
 void signal_handler (void *user)
 {
-    DEBUG("termination requested");
+    DEBUG_PRINT("termination requested");
     
     BReactor_Quit(&reactor, 1);
 }
@@ -144,7 +144,7 @@ void monitor_handler (void *unused, struct NCDInterfaceMonitor_event event)
 
 void monitor_handler_error (void *unused)
 {
-    DEBUG("monitor error");
+    DEBUG_PRINT("monitor error");
     
     BReactor_Quit(&reactor, 1);
 }

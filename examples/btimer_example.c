@@ -65,7 +65,7 @@ int main ()
     BTime_Init();
 
     if (!BReactor_Init(&sys)) {
-        DEBUG("BReactor_Init failed");
+        DEBUG_PRINT("BReactor_Init failed");
         return 1;
     }
     

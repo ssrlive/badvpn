@@ -51,12 +51,12 @@ int main ()
     BLog_SetChannelLoglevel(BLOG_CHANNEL_BThreadWork, BLOG_DEBUG);
     
     if (!BReactor_Init(&reactor)) {
-        DEBUG("BReactor_Init failed");
+        DEBUG_PRINT("BReactor_Init failed");
         goto fail1;
     }
     
     if (!BThreadWorkDispatcher_Init(&twd, &reactor, 1)) {
-        DEBUG("BThreadWorkDispatcher_Init failed");
+        DEBUG_PRINT("BThreadWorkDispatcher_Init failed");
         goto fail2;
     }
     
