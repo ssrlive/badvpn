@@ -529,7 +529,7 @@ void connection_send (struct SocksUdpClient_connection *con,
     ASSERT(out_data - out_data_begin == total_len)
 
     // Submit packet to buffer
-    BufferWriter_EndPacket(&con->send_writer, total_len);
+    BufferWriter_EndPacket(&con->send_writer, (int)total_len);
 }
 
 void first_job_handler (struct SocksUdpClient_connection *con)

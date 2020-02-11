@@ -481,6 +481,9 @@
 		3AB69FD920793F6800ABA419 /* BTap.c in Sources */ = {isa = PBXBuildFile; fileRef = 3AB69DB02078F85A00ABA419 /* BTap.c */; };
 		3AB69FDD2079412B00ABA419 /* fs.c in Sources */ = {isa = PBXBuildFile; fileRef = 3AB69E57207939E400ABA419 /* fs.c */; };
 		3AB69FDE2079412C00ABA419 /* fs.c in Sources */ = {isa = PBXBuildFile; fileRef = 3AB69E57207939E400ABA419 /* fs.c */; };
+		3AF2021E23F2A1DD0078900A /* SocksUdpClient.h in Headers */ = {isa = PBXBuildFile; fileRef = 3AF2021C23F2A1DD0078900A /* SocksUdpClient.h */; };
+		3AF2021F23F2A1DD0078900A /* SocksUdpClient.c in Sources */ = {isa = PBXBuildFile; fileRef = 3AF2021D23F2A1DD0078900A /* SocksUdpClient.c */; };
+		3AF2022023F2A3D10078900A /* BDatagram_unix.c in Sources */ = {isa = PBXBuildFile; fileRef = 3AB69CA12078F7E300ABA419 /* BDatagram_unix.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -753,6 +756,8 @@
 		3AB69EBC207939E500ABA419 /* sockets.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sockets.c; sourceTree = "<group>"; };
 		3AB69EBD207939E500ABA419 /* tcpip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tcpip.c; sourceTree = "<group>"; };
 		3AB69FD320793C9100ABA419 /* sys.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sys.c; sourceTree = "<group>"; };
+		3AF2021C23F2A1DD0078900A /* SocksUdpClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SocksUdpClient.h; path = ../socks_udp_client/SocksUdpClient.h; sourceTree = "<group>"; };
+		3AF2021D23F2A1DD0078900A /* SocksUdpClient.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SocksUdpClient.c; path = ../socks_udp_client/SocksUdpClient.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -781,6 +786,7 @@
 				3AB69DD62078F9B500ABA419 /* flowextra */,
 				3AB69DCC2078F97B00ABA419 /* udpgw_client */,
 				3AB69DC22078F93A00ABA419 /* socksclient */,
+				3AF2021523F2A0DF0078900A /* socks_udp_client */,
 				3AB69DAF2078F85A00ABA419 /* tuntap */,
 				3AB69CFD2078F80700ABA419 /* flow */,
 				3AB69C8D2078F75200ABA419 /* system */,
@@ -1331,6 +1337,15 @@
 			path = ../lwip/custom;
 			sourceTree = "<group>";
 		};
+		3AF2021523F2A0DF0078900A /* socks_udp_client */ = {
+			isa = PBXGroup;
+			children = (
+				3AF2021D23F2A1DD0078900A /* SocksUdpClient.c */,
+				3AF2021C23F2A1DD0078900A /* SocksUdpClient.h */,
+			);
+			name = socks_udp_client;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -1379,6 +1394,7 @@
 				3AB69F24207939E500ABA419 /* tinydir.h in Headers */,
 				3AB69F0C207939E500ABA419 /* altcp_tls_mbedtls_structs.h in Headers */,
 				3AB69D812078F80700ABA419 /* PacketRouter.h in Headers */,
+				3AF2021E23F2A1DD0078900A /* SocksUdpClient.h in Headers */,
 				3AB69D5F2078F80700ABA419 /* PacketPassNotifier.h in Headers */,
 				3AB69D852078F80700ABA419 /* PacketStreamSender.h in Headers */,
 				3AB69D6D2078F80700ABA419 /* PacketProtoEncoder.h in Headers */,
@@ -1548,6 +1564,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = 3A6EB14020784E3300763A08;
 			productRefGroup = 3A6EB14B20784E3300763A08 /* Products */;
@@ -1594,6 +1611,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3AF2022023F2A3D10078900A /* BDatagram_unix.c in Sources */,
 				3AB69F76207939E500ABA419 /* ccp.c in Sources */,
 				3AB69EF0207939E500ABA419 /* memp.c in Sources */,
 				3AB69FC4207939E500ABA419 /* sockets.c in Sources */,
@@ -1685,6 +1703,7 @@
 				3AB69F66207939E500ABA419 /* sntp.c in Sources */,
 				3AB69EDA207939E500ABA419 /* ip4_frag.c in Sources */,
 				3AB69F26207939E500ABA419 /* lwiperf.c in Sources */,
+				3AF2021F23F2A1DD0078900A /* SocksUdpClient.c in Sources */,
 				3AB69DA72078F80700ABA419 /* StreamRecvConnector.c in Sources */,
 				3AB69F34207939E500ABA419 /* snmp_core.c in Sources */,
 				3AB69FBE207939E500ABA419 /* netbuf.c in Sources */,
@@ -1973,10 +1992,7 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
+				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -2079,10 +2095,16 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_CFLAGS = (
+					"-Wno-unused-function",
+					"-Wno-deprecated",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.ssrlive.tun2socks;
 				PRODUCT_NAME = tun2socks;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				WARNING_CFLAGS = "";
 			};
 			name = Debug;
 		};
@@ -2118,10 +2140,15 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				OTHER_CFLAGS = (
+					"-Wno-unused-function",
+					"-Wno-deprecated",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.ssrlive.tun2socks;
 				PRODUCT_NAME = tun2socks;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				WARNING_CFLAGS = "";
 			};
 			name = Release;
 		};

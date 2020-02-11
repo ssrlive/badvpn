@@ -118,13 +118,13 @@ struct BProcess_params {
  * @param user argument to handler
  * @param file path to executable file
  * @param argv arguments array, including the zeroth argument, terminated with a NULL pointer
- * @param params.username user account to run the program as, or NULL to not switch user
- * @param params.fds array of file descriptors in the parent to map to file descriptors in the child,
+ * @param params .username user account to run the program as, or NULL to not switch user
+ * @ param params.fds array of file descriptors in the parent to map to file descriptors in the child,
  *            terminated with -1
- * @param params.fds_map array of file descriptors in the child that file descriptors in 'fds' will
+ * @ param params.fds_map array of file descriptors in the child that file descriptors in 'fds' will
  *                be mapped to, in the same order. Must contain the same number of file descriptors
  *                as the 'fds' argument, and does not have to be terminated with -1.
- * @param params.do_setsid if set to non-zero, will make the child call setsid() before exec'ing.
+ * @ param params.do_setsid if set to non-zero, will make the child call setsid() before exec'ing.
  *                         Failure of setsid() will be ignored.
  * @return 1 on success, 0 on failure
  */
