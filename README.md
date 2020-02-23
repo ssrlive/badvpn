@@ -68,7 +68,34 @@ Otherwise (if you want the VPN software), you will first need to install the Ope
 and NSS libraries and make sure that CMake can find them.
 
 Windows builds are not provided. You can build from source code using Visual Studio by
-following the instructions in the file `BUILD-WINDOWS-VisualStudio.md`.
+following the instructions in the file `BUILD-WINDOWS-VisualStudio.md`.``
+
+## macOS
+```
+brew install openssl nspr nss
+brew link --force openssl
+
+Warning: Refusing to link macOS-provided software: openssl
+If you need to have openssl@1.1 first in your PATH run:
+  echo 'export PATH="/usr/local/opt/openssl@1.1/bin:$PATH"' >> ~/.bash_profile
+
+For compilers to find openssl@1.1 you may need to set:
+  export LDFLAGS="-L/usr/local/opt/openssl@1.1/lib"
+  export CPPFLAGS="-I/usr/local/opt/openssl@1.1/include"
+
+For pkg-config to find openssl@1.1 you may need to set:
+  export PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig"
+
+vi ~/.bash_profile
+
+export PATH="/usr/local/opt/openssl@1.1/bin:$PATH"
+export LDFLAGS="-L/usr/local/opt/openssl@1.1/lib"
+export CPPFLAGS="-I/usr/local/opt/openssl@1.1/include"
+export PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig"
+
+source ~/.bash_profile
+
+```
 
 ## License
 
