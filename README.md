@@ -72,7 +72,7 @@ following the instructions in the file `BUILD-WINDOWS-VisualStudio.md`.``
 
 ## macOS
 ```
-brew install openssl nspr nss
+brew install pkg-config openssl nspr nss
 brew link --force openssl
 
 Warning: Refusing to link macOS-provided software: openssl
