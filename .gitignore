@@ -1,6 +1,10 @@
 xcuserdata
 *.xcworkspace
 build/
+cmake-build-debug/
+cmake-build-release/
+.vscode/
+.idea/
 
 build/
 
