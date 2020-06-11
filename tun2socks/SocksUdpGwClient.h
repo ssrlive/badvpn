@@ -56,7 +56,7 @@ typedef struct
     unsigned char tc :1; // truncated message
     unsigned char aa :1; // authoritive answer
     unsigned char opcode :4; // purpose of message
-	unsigned char qr :1; // query/response flag
+    unsigned char qr :1; // query/response flag
 
     unsigned char rcode :4; // response code
     unsigned char cd :1; // checking disabled

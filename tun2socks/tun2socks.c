@@ -208,7 +208,7 @@ struct {
 #else
     char *tundev;
 #endif
-	int socks5_udp;
+    int socks5_udp;
 } options;
 
 // TCP client
@@ -621,7 +621,7 @@ int main (int argc, char **argv)
         BLog(BLOG_ERROR, "SinglePacketBuffer_Init failed");
         goto fail4;
     }
-	// compute maximum UDP payload size we need to pass through udpgw
+    // compute maximum UDP payload size we need to pass through udpgw
     udp_mtu = BTap_GetMTU(&device) - (int)(sizeof(struct ipv4_header) + sizeof(struct udp_header));
     if (options.netif_ip6addr) {
         int udp_ip6_mtu = BTap_GetMTU(&device) - (int)(sizeof(struct ipv6_header) + sizeof(struct udp_header));
@@ -825,7 +825,7 @@ void print_help (const char *name)
         "        [--udpgw-connection-buffer-size <number>]\n"
         "        [--udpgw-transparent-dns]\n"
 #endif
-		"        [--socks5-udp]\n"
+        "        [--socks5-udp]\n"
         "Address format is a.b.c.d:port (IPv4) or [addr]:port (IPv6).\n",
         name
     );
@@ -1104,7 +1104,7 @@ int parse_arguments (int argc, char *argv[])
             options.udpgw_transparent_dns = 1;
         }
 #endif
-		else if (!strcmp(arg, "--socks5-udp")) {
+        else if (!strcmp(arg, "--socks5-udp")) {
             options.socks5_udp = 1;
         }
         else {
