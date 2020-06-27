@@ -261,7 +261,7 @@ int BTap_Init2 (BTap *o, BReactor *reactor, struct BTap_init_data init_data, BTa
     
     BLog(BLOG_INFO, "Opening device %s", device_path);
     
-    o->device = CreateFile(device_path, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM|FILE_FLAG_OVERLAPPED, 0);
+    o->device = CreateFileA(device_path, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM|FILE_FLAG_OVERLAPPED, 0);
     if (o->device == INVALID_HANDLE_VALUE) {
         BLog(BLOG_ERROR, "CreateFile failed");
         goto fail1;

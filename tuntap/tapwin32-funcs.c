@@ -138,7 +138,7 @@ int tapwin32_find_device (char *device_component_id, char *device_name, char (*d
     // open adapter key
     // used to find all devices with the given ComponentId
     HKEY adapter_key;
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, ADAPTER_KEY, 0, KEY_READ, &adapter_key) != ERROR_SUCCESS) {
+    if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, ADAPTER_KEY, 0, KEY_READ, &adapter_key) != ERROR_SUCCESS) {
         DEBUG_PRINT("Error opening adapter key");
         return 0;
     }
@@ -152,7 +152,7 @@ int tapwin32_find_device (char *device_component_id, char *device_name, char (*d
         
         char key_name[TAPWIN32_MAX_REG_SIZE];
         len = sizeof(key_name);
-        if (RegEnumKeyEx(adapter_key, i, key_name, &len, NULL, NULL, NULL, NULL) != ERROR_SUCCESS) {
+        if (RegEnumKeyExA(adapter_key, i, key_name, &len, NULL, NULL, NULL, NULL) != ERROR_SUCCESS) {
             break;
         }
         
@@ -160,18 +160,18 @@ int tapwin32_find_device (char *device_component_id, char *device_name, char (*d
         if (pres < 0 || pres == sizeof(unit_string)) {
             continue;
         }
-        if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, unit_string, 0, KEY_READ, &unit_key) != ERROR_SUCCESS) {
+        if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, unit_string, 0, KEY_READ, &unit_key) != ERROR_SUCCESS) {
             continue;
         }
         
         len = sizeof(component_id);
-        if (RegQueryValueEx(unit_key, "ComponentId", NULL, &type, (LPBYTE)component_id, &len) != ERROR_SUCCESS || type != REG_SZ) {
+        if (RegQueryValueExA(unit_key, "ComponentId", NULL, &type, (LPBYTE)component_id, &len) != ERROR_SUCCESS || type != REG_SZ) {
             ASSERT_FORCE(RegCloseKey(unit_key) == ERROR_SUCCESS)
             continue;
         }
         
         len = sizeof(net_cfg_instance_id);
-        if (RegQueryValueEx(unit_key, "NetCfgInstanceId", NULL, &type, (LPBYTE)net_cfg_instance_id, &len) != ERROR_SUCCESS || type != REG_SZ) {
+        if (RegQueryValueExA(unit_key, "NetCfgInstanceId", NULL, &type, (LPBYTE)net_cfg_instance_id, &len) != ERROR_SUCCESS || type != REG_SZ) {
             ASSERT_FORCE(RegCloseKey(unit_key) == ERROR_SUCCESS)
             continue;
         }
@@ -195,13 +195,13 @@ int tapwin32_find_device (char *device_component_id, char *device_name, char (*d
             if (pres < 0 || pres == sizeof(conn_string)) {
                 continue;
             }
-            if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, conn_string, 0, KEY_READ, &conn_key) != ERROR_SUCCESS) {
+            if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, conn_string, 0, KEY_READ, &conn_key) != ERROR_SUCCESS) {
                 continue;
             }
             
             // read name
             len = sizeof(name);
-            if (RegQueryValueEx(conn_key, "Name", NULL, &type, (LPBYTE)name, &len) != ERROR_SUCCESS || type != REG_SZ) {
+            if (RegQueryValueExA(conn_key, "Name", NULL, &type, (LPBYTE)name, &len) != ERROR_SUCCESS || type != REG_SZ) {
                 ASSERT_FORCE(RegCloseKey(conn_key) == ERROR_SUCCESS)
                 continue;
             }
